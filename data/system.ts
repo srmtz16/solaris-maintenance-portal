@@ -1,28 +1,35 @@
-export const system = {
+export type MaintenanceItem = {
+  date: string;
+  type: string;
+  status: string;
+  technician: string;
+  hasReport: boolean;
+  hasPhotos: boolean;
+  hasObservations: boolean;
+};
+
+export type SystemDocument = { name: string; type: string };
+
+export type SolarSystem = {
+  id: string;
+  installedPower: string;
+  installationDate: string;
+  lastMaintenance: string;
+  nextMaintenance: string;
+  maintenanceHistory: MaintenanceItem[];
+  documents: SystemDocument[];
+  observations: string[];
+};
+
+export const system: SolarSystem = {
   id: "FV-0001",
   installedPower: "8.68 kWp",
   installationDate: "Mayo 2026",
   lastMaintenance: "14 agosto 2026",
   nextMaintenance: "Agosto 2027",
   maintenanceHistory: [
-    {
-      date: "14/08/2026",
-      type: "Mantenimiento preventivo",
-      status: "Completado",
-      technician: "Equipo Solaris",
-      hasReport: true,
-      hasPhotos: true,
-      hasObservations: true,
-    },
-    {
-      date: "03/02/2027",
-      type: "Inspección eléctrica",
-      status: "Completado",
-      technician: "Equipo Solaris",
-      hasReport: true,
-      hasPhotos: true,
-      hasObservations: true,
-    },
+    { date: "14/08/2026", type: "Mantenimiento preventivo", status: "Completado", technician: "Equipo Solaris", hasReport: true, hasPhotos: true, hasObservations: true },
+    { date: "03/02/2027", type: "Inspección eléctrica", status: "Completado", technician: "Equipo Solaris", hasReport: true, hasPhotos: true, hasObservations: true },
   ],
   documents: [
     { name: "Ficha técnica", type: "PDF" },
@@ -35,6 +42,4 @@ export const system = {
     "Se realizó inspección visual, limpieza general y revisión de conexiones accesibles.",
     "Se recomienda realizar nuevamente mantenimiento preventivo en agosto de 2027.",
   ],
-} as const;
-
-export type SolarSystem = typeof system;
+};

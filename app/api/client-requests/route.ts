@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       // Do not log error details: they can contain contact data.
       if (detail.code === "PGRST202") return NextResponse.json({ error: "La recepción de solicitudes aún no está habilitada." }, { status: 503 });
       if (detail.code === "P0001") return NextResponse.json({ error: "Ya recibimos una solicitud reciente con este teléfono. Espera cinco minutos antes de enviar otra." }, { status: 429 });
-      if (detail.code === "22023") return NextResponse.json({ error: "No fue posible validar el sistema o los datos. Revisa tu información." }, { status: 400 });
+      if (detail.code === "22023") return NextResponse.json({ error: "El vínculo de esta vivienda no es válido. Vuelve a escanear el QR." }, { status: 400 });
       return NextResponse.json({ error: "No pudimos guardar la solicitud. Intenta nuevamente." }, { status: 502 });
     }
     const reference = await response.json();

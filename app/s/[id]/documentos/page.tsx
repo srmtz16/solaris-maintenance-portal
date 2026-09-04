@@ -1,9 +1,2 @@
-import { notFound } from "next/navigation";
-import { SystemPortal } from "@/components/system-portal";
-import { system } from "@/data/system";
-
-export default async function DocumentsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  if (id !== system.id) notFound();
-  return <SystemPortal system={system} view="documentos" />;
-}
+import { PortalPage } from "../portal-page";
+export default function Page({ params }: { params: Promise<{ id: string }> }) { return <PortalPage params={params} view="documentos" />; }

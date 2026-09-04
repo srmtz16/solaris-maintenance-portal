@@ -2,22 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateClientRequest } from '../lib/client-request.ts';
 
-const form = { systemId: 'FV-0001', requestType: 'maintenance', name: ' Cliente prueba ', phone: '9991234567', message: 'Solicito mantenimiento', email: '', preferredDate: '' };
+const token = '123e4567-e89b-42d3-a456-426614174000';
+const form = { portalKey: token, requestType: 'maintenance', message: 'Solicito mantenimiento', preferredDate: '' };
 
-test('maps form fields to exact RPC parameters and normalizes optional values', () => {
+test('maps the QR token and request to exact RPC parameters', () => {
   assert.deepEqual(validateClientRequest(form), { payload: {
-    p_system_code: 'FV-0001', p_request_type: 'maintenance', p_customer_name: 'Cliente prueba',
-    p_phone: '9991234567', p_email: null, p_message: 'Solicito mantenimiento', p_preferred_date: null,
+    p_public_token: token, p_request_type: 'maintenance', p_message: 'Solicito mantenimiento', p_preferred_date: null,
   } });
 });
-test('maps failure without creating a completed maintenance', () => {
-  assert.equal(validateClientRequest({ ...form, requestType: 'failure' }).payload.p_request_type, 'failure');
+test('maps a failure without collecting personal data', () => {
+  assert.deepEqual(Object.keys(validateClientRequest({ ...form, requestType: 'failure' }).payload).sort(), ['p_message','p_preferred_date','p_public_token','p_request_type']);
 });
 for (const [label, input] of [
-  ['null', null], ['array', []], ['wrong field type', { ...form, name: {} }],
-  ['invalid system', { ...form, systemId: 'other' }],
+  ['null', null], ['array', []], ['wrong field type', { ...form, message: {} }],
+  ['sequential public id', { ...form, portalKey: 'FV-0001' }],
   ['invalid request type', { ...form, requestType: 'completed' }],
-  ['invalid email', { ...form, email: 'not-an-email' }],
   ['too long message', { ...form, message: 'x'.repeat(1501) }],
   ['invalid calendar day', { ...form, preferredDate: '2027-02-30' }],
   ['date on failure', { ...form, requestType: 'failure', preferredDate: '2027-08-01' }],
