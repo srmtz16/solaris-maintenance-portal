@@ -3,8 +3,9 @@
 import {
   ArrowRight, CalendarDays, Camera, Check, ChevronRight, ClipboardCheck,
   FileText, FolderOpen, Headphones, History, Home, Images, LayoutGrid,
-  MessageSquareText, ShieldCheck, Sparkles, Sun, Wrench, X,
+  MessageSquareText, Sparkles, Wrench, X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -21,11 +22,17 @@ const navItems = [
 
 const portalHref = (id: string, section: string) => `/s/${id}${section ? `/${section}` : ""}`;
 
+function BrandLogo({ priority = false }: { priority?: boolean }) {
+  return <span className="relative block h-[54px] w-[175px] shrink-0 overflow-hidden md:h-[70px] md:w-[220px]" aria-label="SOLEA Energy Solutions — Iluminando el mañana">
+    <Image src="/solea-energy-solutions.png" alt="SOLEA Energy Solutions — Iluminando el mañana" width={1024} height={1024} priority={priority} className="absolute -left-[18px] -top-[74px] h-auto w-[211px] max-w-none md:-left-[23px] md:-top-[92px] md:w-[266px]" />
+  </span>;
+}
+
 function Header({ id, portalKey }: { id: string; portalKey: string }) {
   const pathname = usePathname();
   return <header className="border-b border-stone-200/80 bg-[#faf9f6]/90 backdrop-blur-xl">
     <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
-      <Link href={portalHref(portalKey, "")} className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-full bg-[#171713] text-[#d5b66f]"><Sun className="size-5" /></div><div><div className="text-sm font-semibold tracking-[.18em] text-stone-900">SOLARIS</div><div className="text-[10px] uppercase tracking-[.2em] text-stone-500">Mi hogar solar</div></div></Link>
+      <Link href={portalHref(portalKey, "")} className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f6b500]"><BrandLogo priority /></Link>
       <nav className="hidden items-center gap-1 md:flex">{navItems.map(({ label, section }) => { const href = portalHref(portalKey, section); const active = pathname === href; return <Link key={label} href={href} className={`rounded-full px-4 py-2 text-sm font-medium transition ${active ? "bg-stone-900 text-white" : "text-stone-500 hover:bg-white hover:text-stone-900"}`}>{label}</Link>; })}</nav>
       <div className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-600">Vivienda · {id}</div>
     </div>
@@ -108,5 +115,5 @@ export function SystemPortal({ system, portalKey, view = "inicio" }: { system: S
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
   const demoMode = portalKey === "FV-0001" || portalKey === "demo";
   const openRequest = (type: RequestType) => setRequestType(type);
-  return <div className="min-h-[100dvh] bg-[#faf9f6] text-stone-900"><Header id={system.id} portalKey={portalKey} /><main className="mx-auto min-h-[70vh] max-w-6xl space-y-12 px-5 pb-32 pt-8 md:px-8 md:pb-16 md:pt-12">{view === "inicio" && <><SystemSummary system={system} /><NextMaintenance system={system} onRequest={openRequest} /><Observations system={system} /></>}{view === "historial" && <MaintenanceHistory system={system} />}{view === "documentos" && <Documents system={system} notify={notify} />}{view === "soporte" && <QuickActions id={portalKey} openRequest={openRequest} />}</main><footer className="border-t border-stone-200 bg-white px-5 py-10 text-center text-xs text-stone-400"><div className="mb-2 flex items-center justify-center gap-2 font-semibold tracking-[.16em] text-stone-700"><ShieldCheck className="size-4 text-[#9b7835]" /> SOLARIS</div><div>Expediente de mantenimiento · {system.id}</div><Link href={portalHref(portalKey, "historial")} className="mt-3 inline-flex rounded-full border border-stone-200 px-3 py-1.5 font-medium text-stone-500 transition hover:border-stone-300 hover:text-stone-800">Consulta para técnicos · solo lectura</Link></footer><MobileNavigation id={portalKey} />{requestType && <RequestDialog type={requestType} systemId={system.id} portalKey={portalKey} demoMode={demoMode} close={() => setRequestType(null)} completed={notify} />}{toast && <div role="status" className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-white shadow-xl md:bottom-8">{toast}</div>}</div>;
+  return <div className="min-h-[100dvh] bg-[#faf9f6] text-stone-900"><Header id={system.id} portalKey={portalKey} /><main className="mx-auto min-h-[70vh] max-w-6xl space-y-12 px-5 pb-32 pt-8 md:px-8 md:pb-16 md:pt-12">{view === "inicio" && <><SystemSummary system={system} /><NextMaintenance system={system} onRequest={openRequest} /><Observations system={system} /></>}{view === "historial" && <MaintenanceHistory system={system} />}{view === "documentos" && <Documents system={system} notify={notify} />}{view === "soporte" && <QuickActions id={portalKey} openRequest={openRequest} />}</main><footer className="border-t border-stone-200 bg-white px-5 py-10 text-center text-xs text-stone-400"><div className="mb-3 flex justify-center"><BrandLogo /></div><div>Expediente de mantenimiento · {system.id}</div><Link href={portalHref(portalKey, "historial")} className="mt-3 inline-flex rounded-full border border-stone-200 px-3 py-1.5 font-medium text-stone-500 transition hover:border-stone-300 hover:text-stone-800">Consulta para técnicos · solo lectura</Link></footer><MobileNavigation id={portalKey} />{requestType && <RequestDialog type={requestType} systemId={system.id} portalKey={portalKey} demoMode={demoMode} close={() => setRequestType(null)} completed={notify} />}{toast && <div role="status" className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-white shadow-xl md:bottom-8">{toast}</div>}</div>;
 }
