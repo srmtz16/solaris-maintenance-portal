@@ -1,0 +1,7 @@
+import Link from "next/link";
+
+export default async function PrivacyPage({ searchParams }: { searchParams: Promise<{ returnTo?: string }> }) {
+  const requestedReturn = (await searchParams).returnTo;
+  const returnTo = requestedReturn?.startsWith("/s/") && !requestedReturn.startsWith("//") ? requestedReturn : "/";
+  return <main className="min-h-[100dvh] bg-[#faf9f6] px-5 py-12 text-stone-900 md:py-20"><article className="mx-auto max-w-2xl rounded-[2rem] border border-stone-200 bg-white p-7 shadow-sm md:p-12"><p className="text-xs font-semibold uppercase tracking-[.18em] text-[#9b7835]">Solaris</p><h1 className="mt-3 text-3xl font-semibold tracking-tight">Aviso de privacidad</h1><div className="mt-7 space-y-5 text-sm leading-7 text-stone-600"><p>Los datos vinculados con el expediente de la vivienda se utilizan únicamente para identificar el sistema fotovoltaico, atender solicitudes de mantenimiento, dar seguimiento a fallas y conservar el historial técnico.</p><p>El acceso mediante QR permite consultar información operativa del sistema. La información no debe utilizarse para modificar historiales ni sustituye la confirmación de una cita o diagnóstico técnico.</p><p>Para solicitar información, corrección o eliminación de datos, utiliza la sección de Soporte del expediente de tu vivienda.</p></div><Link href={returnTo} className="mt-8 inline-flex rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">Volver al portal</Link></article></main>;
+}
