@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { QrCode, ShieldCheck, Sun } from "lucide-react";
 
 export default function HomePage() {
-  redirect("/s/FV-0001");
+  return <main className="grid min-h-[100dvh] place-items-center bg-[#faf9f6] px-5 py-12 text-stone-900"><section className="w-full max-w-lg rounded-[2rem] border border-stone-200 bg-white p-8 text-center shadow-[0_20px_60px_rgba(20,20,15,.08)] md:p-12"><span className="mx-auto grid size-12 place-items-center rounded-full bg-stone-900 text-[#d6b76f]"><Sun className="size-6" /></span><p className="mt-5 text-xs font-semibold uppercase tracking-[.2em] text-[#9b7835]">Solaris</p><h1 className="mt-3 text-3xl font-semibold tracking-tight">Portal de mantenimiento</h1><p className="mt-4 text-sm leading-6 text-stone-500">Escanea el código QR instalado en tu vivienda para abrir el expediente de tu sistema fotovoltaico.</p><div className="mx-auto mt-7 grid size-20 place-items-center rounded-3xl bg-[#f4efe4] text-[#9b7835]"><QrCode className="size-9" /></div><p className="mt-7 flex items-center justify-center gap-2 text-xs text-stone-400"><ShieldCheck className="size-4" /> Cada QR identifica una vivienda autorizada</p></section></main>;
 }

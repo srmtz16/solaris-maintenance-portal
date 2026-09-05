@@ -1,5 +1,5 @@
 import "server-only";
-import { system as demoSystem, type SolarSystem } from "@/data/system";
+import type { SolarSystem } from "@/data/system";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -10,7 +10,6 @@ function dateLabel(value: unknown, monthOnly = false) {
 }
 
 export async function getPublicSystem(portalKey: string): Promise<SolarSystem | null> {
-  if (portalKey === "FV-0001" || portalKey === "demo") return demoSystem;
   if (!uuidPattern.test(portalKey)) return null;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
