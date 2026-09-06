@@ -27,10 +27,17 @@ export async function getPublicSystem(portalKey: string): Promise<SolarSystem | 
     const observations = Array.isArray(data.observations) ? data.observations.filter((item: unknown): item is string => typeof item === "string" && item.trim().length > 0) : [];
     return {
       id: data.id,
+      clientName: typeof data.clientName === "string" && data.clientName.trim() ? data.clientName.trim() : null,
+      welcomeLabel: data.welcomeLabel === "Bienvenida" ? "Bienvenida" : "Bienvenido",
       installedPower: typeof data.installedPower === "number" ? `${data.installedPower.toFixed(2)} kWp` : "Sin registro",
       installationDate: dateLabel(data.installationDate, true), lastMaintenance: dateLabel(data.lastMaintenance), nextMaintenance: dateLabel(data.nextMaintenance, true),
       maintenanceHistory: history.map((item: Record<string, unknown>) => ({ date: dateLabel(item.date), type: String(item.type || "Servicio"), status: "Completado", technician: String(item.technician || "Equipo Solaris"), hasReport: Boolean(item.hasReport), hasPhotos: Boolean(item.hasPhotos), hasObservations: Boolean(item.hasObservations) })),
-      documents: documents.map((item: Record<string, unknown>) => ({ name: String(item.name || "Documento"), type: String(item.type || "Archivo") })), observations,
+      documents: documents.map((item: Record<string, unknown>) => ({
+        name: String(item.name || "Documento"),
+        type: String(item.type || "Archivo"),
+        fileUrl: typeof item.fileUrl === "string" && /^https:\/\//i.test(item.fileUrl) ? item.fileUrl : null,
+        publishedAt: typeof item.publishedAt === "string" ? item.publishedAt : null,
+      })), observations,
     };
   } catch { return null; }
 }
