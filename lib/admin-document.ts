@@ -1,7 +1,7 @@
 export const DOCUMENT_BUCKET = "system-documents";
 export const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024;
 
-export const documentTypes = ["Diagrama unifilar", "Reporte", "Fotografía"] as const;
+export const documentTypes = ["Diagrama unifilar", "Reporte", "Fotografías"] as const;
 export type DocumentType = (typeof documentTypes)[number];
 
 const allowedMimeTypes = new Set(["application/pdf", "image/png", "image/jpeg"]);

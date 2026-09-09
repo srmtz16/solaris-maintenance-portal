@@ -41,19 +41,22 @@ export function AdminRecords({ view, refreshKey, onEdit }: { view: RealAdminView
     setLoading(true);
     setError("");
     const supabase = getSupabaseBrowserClient();
-    const [systemsResult, clientsResult, maintenanceResult, requestsResult] = await Promise.all([
-      supabase.from("Sistemas").select("id, created_at, client_id, system_code, public_token, adress, num_panels, panel_power_w, panel_brand, inverter_model, inverter_serial, installation_date, system_status").order("system_code"),
-      supabase.from("Clientes").select("id, full_name, phone, email, notes, welcome_label"),
-      supabase.from("Maintainance").select("id, system_id, service_Date, service_type, technician_name, next_service_date").order("service_Date", { ascending: false }),
-      supabase.from("client_requests").select("id, status, request_type, system_id, created_at").order("created_at", { ascending: false }).limit(100),
-    ]);
-    if (systemsResult.error || clientsResult.error || maintenanceResult.error || requestsResult.error) {
-      setError("No fue posible consultar toda la información. Verifica que la migración de administración esté aplicada.");
+    const result = await supabase.rpc("admin_get_portal_data");
+    if (result.error || !result.data || typeof result.data !== "object" || Array.isArray(result.data)) {
+      setSystems([]);
+      setMaintenance([]);
+      setRequests([]);
+      setError("No fue posible cargar el panel. Ejecuta la migración 006 y vuelve a iniciar sesión.");
+      setLoading(false);
+      return;
     }
-    const clients = new Map(((clientsResult.data ?? []) as Record<string, unknown>[]).map((client) => [Number(client.id), client]));
-    setSystems(((systemsResult.data ?? []) as unknown as Record<string, unknown>[]).map((system) => mapAdminSystem({ ...system, Clientes: clients.get(Number(system.client_id)) })).filter((item): item is AdminSystem => Boolean(item)));
-    setMaintenance(((maintenanceResult.data ?? []) as Record<string, unknown>[]).map((item) => ({ id: Number(item.id), systemId: String(item.system_id || ""), date: String(item.service_Date || ""), type: String(item.service_type || "Servicio"), technician: String(item.technician_name || "Sin asignar"), nextDate: String(item.next_service_date || "") })));
-    setRequests((requestsResult.data ?? []) as RequestRow[]);
+    const data = result.data as Record<string, unknown>;
+    const systemRows = Array.isArray(data.systems) ? data.systems as Record<string, unknown>[] : [];
+    const maintenanceRows = Array.isArray(data.maintenance) ? data.maintenance as Record<string, unknown>[] : [];
+    const requestRows = Array.isArray(data.requests) ? data.requests as RequestRow[] : [];
+    setSystems(systemRows.map(mapAdminSystem).filter((item): item is AdminSystem => Boolean(item)));
+    setMaintenance(maintenanceRows.map((item) => ({ id: Number(item.id), systemId: String(item.system_id || ""), date: String(item.service_Date || ""), type: String(item.service_type || "Servicio"), technician: String(item.technician_name || "Sin asignar"), nextDate: String(item.next_service_date || "") })));
+    setRequests(requestRows);
     setLoading(false);
   }, []);
 

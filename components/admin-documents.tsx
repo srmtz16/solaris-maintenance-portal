@@ -36,17 +36,16 @@ export function AdminDocuments() {
     setLoading(true);
     setMessage(null);
     const supabase = getSupabaseBrowserClient();
-    const [systemsResult, documentsResult] = await Promise.all([
-      supabase.from("Sistemas").select("system_code").order("system_code"),
-      supabase.from("Documentos").select("id, created_at, system_id, document_type, file_url, description").order("created_at", { ascending: false }),
-    ]);
-
-    if (systemsResult.error || documentsResult.error) {
-      setMessage({ kind: "error", text: "No fue posible consultar los documentos. Verifica que la migración de administrador esté aplicada en Supabase." });
+    const result = await supabase.rpc("admin_get_portal_data");
+    if (result.error || !result.data || typeof result.data !== "object" || Array.isArray(result.data)) {
+      setSystems([]);
+      setDocuments([]);
+      setMessage({ kind: "error", text: "No fue posible consultar los documentos. Ejecuta la migración 006 y vuelve a iniciar sesión." });
     } else {
-      const realSystems = (systemsResult.data ?? []) as SystemRow[];
+      const data = result.data as Record<string, unknown>;
+      const realSystems = (Array.isArray(data.systems) ? data.systems : []).map((item) => ({ system_code: String((item as Record<string, unknown>).system_code || "") })).filter((item) => item.system_code) as SystemRow[];
       setSystems(realSystems);
-      setDocuments((documentsResult.data ?? []) as DocumentRow[]);
+      setDocuments((Array.isArray(data.documents) ? data.documents : []) as DocumentRow[]);
       setSystemCode((current) => current || realSystems.find((item) => item.system_code === "FV-0001")?.system_code || realSystems[0]?.system_code || "");
       if (realSystems.length === 0) setMessage({ kind: "error", text: "No hay sistemas disponibles para esta cuenta administrativa." });
     }
@@ -91,12 +90,11 @@ export function AdminDocuments() {
     }
 
     const { data: publicFile } = supabase.storage.from(DOCUMENT_BUCKET).getPublicUrl(path);
-    const insertResult = await supabase.from("Documentos").insert({
-      system_id: systemCode,
-      maintenance_id: null,
-      document_type: type,
-      file_url: publicFile.publicUrl,
-      description: description.trim() || file.name,
+    const insertResult = await supabase.rpc("admin_register_document", {
+      p_system_code: systemCode,
+      p_document_type: type,
+      p_file_url: publicFile.publicUrl,
+      p_description: description.trim() || file.name,
     });
 
     if (insertResult.error) {
@@ -119,6 +117,8 @@ export function AdminDocuments() {
     </div>
 
     {message && <p role="status" className={`rounded-2xl px-4 py-3 text-sm ${message.kind === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700"}`}>{message.text}</p>}
+
+    <div className="grid gap-4 sm:grid-cols-3">{documentTypes.map((documentType) => { const PhotoIcon = documentType === "Fotografías" ? FileImage : FileText; return <button key={documentType} onClick={() => { setType(documentType); setOpen(true); }} disabled={!systems.length} className="group flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-4 text-left transition hover:border-[#c6a75f] hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#f4efe4] text-[#9b7835]"><PhotoIcon className="size-5" /></span><span><span className="block text-sm font-semibold">{documentType}</span><span className="mt-1 block text-xs text-stone-500">Seleccionar archivo</span></span></button>; })}</div>
 
     {loading ? <div className="flex min-h-56 items-center justify-center rounded-3xl border border-stone-200 bg-white text-sm text-stone-500"><LoaderCircle className="mr-2 size-5 animate-spin" />Consultando Supabase…</div> : documents.length === 0 ? <div className="rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center"><FileText className="mx-auto size-8 text-stone-300" /><h3 className="mt-4 font-semibold">Aún no hay documentos</h3><p className="mt-2 text-sm text-stone-500">Sube el primer archivo para {systemCode || "un sistema"}.</p></div> : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{documents.map((document) => {
       const image = document.document_type?.toLowerCase().includes("foto");
