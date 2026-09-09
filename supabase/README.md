@@ -50,3 +50,17 @@ Después de guardar una solicitud, la ruta del servidor intenta enviar una alert
 Configurar `RESEND_API_KEY`, `ADMIN_NOTIFICATION_EMAIL` y `EMAIL_FROM` únicamente como
 variables de servidor en Vercel. Si Resend falla, el folio guardado se conserva y el cliente
 recibe confirmación; el error del proveedor no se expone en la respuesta pública.
+## Administrador de documentos
+
+Ejecuta `migrations/202609090004_secure_admin_documents.sql` en el SQL Editor de Supabase.
+La migración crea el bucket `system-documents`, limita la carga a PDF/PNG/JPG/JPEG de 15 MB y protege todas las escrituras con el rol `admin`.
+
+Después, crea tu usuario en **Authentication > Users > Add user** y ejecuta una sola vez, reemplazando el correo:
+
+```sql
+update auth.users
+set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb) || '{"role":"admin"}'::jsonb
+where email = 'TU_CORREO';
+```
+
+El acceso queda en `/admin/login` y la carga real en `/admin/documentos`. El bucket es público solo para descarga porque el portal del cliente también es accesible mediante el QR; crear, actualizar o borrar archivos requiere sesión administrativa.
