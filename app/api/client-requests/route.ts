@@ -1,5 +1,27 @@
 import { NextResponse } from "next/server";
 import { validateClientRequest } from "@/lib/client-request";
+import { sendRequestNotification } from "@/lib/request-notification";
+
+async function getNotificationContext(supabaseUrl: string, supabaseKey: string, publicToken: string) {
+  try {
+    const response = await fetch(`${supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/get_public_system`, {
+      method: "POST",
+      headers: { apikey: supabaseKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_public_token: publicToken }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return null;
+    const system = await response.json();
+    if (!system || typeof system !== "object" || Array.isArray(system)) return null;
+    return {
+      systemCode: typeof system.id === "string" && system.id.trim() ? system.id.trim() : "Sistema vinculado",
+      clientName: typeof system.clientName === "string" && system.clientName.trim() ? system.clientName.trim() : "Cliente vinculado",
+    };
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -39,6 +61,16 @@ export async function POST(request: Request) {
     if (typeof reference !== "string" || !/^[0-9a-f-]{36}$/i.test(reference)) {
       return NextResponse.json({ error: "No se pudo confirmar el envío. Verifica con el equipo antes de reenviar." }, { status: 502 });
     }
+    const context = await getNotificationContext(supabaseUrl, supabaseKey, validation.payload.p_public_token);
+    await sendRequestNotification({
+      reference,
+      requestType: validation.payload.p_request_type,
+      systemCode: context?.systemCode || "Sistema vinculado",
+      clientName: context?.clientName || "Cliente vinculado",
+      message: validation.payload.p_message,
+      preferredDate: validation.payload.p_preferred_date,
+      receivedAt: new Date().toISOString(),
+    });
     return NextResponse.json({ ok: true, reference }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "No se pudo confirmar el envío por un problema de conexión. Verifica con el equipo antes de reenviar." }, { status: 502 });

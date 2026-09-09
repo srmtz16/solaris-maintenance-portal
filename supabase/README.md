@@ -43,3 +43,10 @@ en `Maintainance`: esa tabla es para servicios ya documentados.
   (el código secuencial no es un secreto), aviso de privacidad y protección contra abuso.
 
 No colocar claves `service_role` o `sb_secret_...` en el frontend ni en Git.
+
+## Notificaciones por correo
+
+Después de guardar una solicitud, la ruta del servidor intenta enviar una alerta por Resend.
+Configurar `RESEND_API_KEY`, `ADMIN_NOTIFICATION_EMAIL` y `EMAIL_FROM` únicamente como
+variables de servidor en Vercel. Si Resend falla, el folio guardado se conserva y el cliente
+recibe confirmación; el error del proveedor no se expone en la respuesta pública.
