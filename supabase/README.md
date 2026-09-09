@@ -64,3 +64,15 @@ where email = 'TU_CORREO';
 ```
 
 El acceso queda en `/admin/login` y la carga real en `/admin/documentos`. El bucket es público solo para descarga porque el portal del cliente también es accesible mediante el QR; crear, actualizar o borrar archivos requiere sesión administrativa.
+
+## Alta y edición de sistemas
+
+Ejecuta después `migrations/202609090005_admin_system_management.sql`. Esta migración:
+
+- habilita la lectura administrativa de mantenimientos;
+- crea el alta atómica de cliente y sistema;
+- asigna folios correlativos `FV-0001`, `FV-0002`, `FV-0003`, etc.;
+- evita folios duplicados incluso si dos altas ocurren al mismo tiempo;
+- permite editar conjuntamente el cliente y su sistema sin cambiar el folio ni el UUID del QR.
+
+El panel no contiene expedientes de demostración: todas las cifras, clientes, sistemas, mantenimientos, solicitudes y documentos visibles provienen de Supabase.
