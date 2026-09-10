@@ -36,7 +36,7 @@ export async function getPublicSystem(portalKey: string): Promise<SolarSystem | 
       inverterModel: typeof data.inverterModel === "string" && data.inverterModel.trim() ? data.inverterModel.trim() : "Sin registro",
       inverterSerial: typeof data.inverterSerial === "string" && data.inverterSerial.trim() ? data.inverterSerial.trim() : "Sin registro",
       systemStatus: typeof data.systemStatus === "string" && data.systemStatus.trim() ? data.systemStatus.trim() : "Sin registro",
-      installationDate: dateLabel(data.installationDate, true), lastMaintenance: dateLabel(data.lastMaintenance), nextMaintenance: dateLabel(data.nextMaintenance, true),
+      installationDate: dateLabel(data.installationDate, true), lastMaintenance: dateLabel(data.lastMaintenance), nextMaintenance: dateLabel(data.nextMaintenance),
       maintenanceHistory: history.map((item: Record<string, unknown>) => ({ date: dateLabel(item.date), type: String(item.type || "Servicio"), status: "Completado", technician: String(item.technician || "Equipo Solaris"), hasReport: Boolean(item.hasReport), hasPhotos: Boolean(item.hasPhotos), hasObservations: Boolean(item.hasObservations) })),
       documents: documents.map((item: Record<string, unknown>) => ({
         name: String(item.name || "Documento"),
