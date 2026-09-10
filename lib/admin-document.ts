@@ -21,3 +21,8 @@ export function buildDocumentPath(systemCode: string, type: DocumentType, fileNa
   const safeSystem = systemCode.replace(/[^a-zA-Z0-9-]/g, "");
   return `${safeSystem}/${category}/${id}.${extension}`;
 }
+
+export async function sha256ForFile(file: Blob) {
+  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
