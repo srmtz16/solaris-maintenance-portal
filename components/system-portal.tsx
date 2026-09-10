@@ -6,8 +6,8 @@ import {
   MessageSquareText, ShieldCheck, Sparkles, Sun, Wrench, X, Inbox,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { SolarSystem, SystemDocument } from "@/data/system";
 
 export type SystemPortalView = "inicio" | "sistema" | "historial" | "documentos" | "soporte";
@@ -26,7 +26,7 @@ function Header({ id, portalKey }: { id: string; portalKey: string }) {
   const pathname = usePathname();
   return <header className="border-b border-stone-200/80 bg-[#faf9f6]/90 backdrop-blur-xl">
     <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
-      <Link href={portalHref(portalKey, "")} className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-full bg-[#171713] text-[#d5b66f]"><Sun className="size-5" /></div><div><div className="text-sm font-semibold tracking-[.18em] text-stone-900">SOLARIS</div><div className="text-[10px] uppercase tracking-[.2em] text-stone-500">Mi hogar solar</div></div></Link>
+      <Link href={portalHref(portalKey, "")} className="flex items-center gap-3"><div className="grid size-10 place-items-center rounded-full bg-[#171713] text-[#d5b66f]"><Sun className="size-5" /></div><div><div className="text-sm font-semibold tracking-[.18em] text-stone-900">SOLARIS</div><div className="text-[10px] uppercase tracking-[.2em] text-stone-500">Pasaporte solar</div></div></Link>
       <nav className="hidden items-center gap-1 md:flex" aria-label="Secciones del portal">{navItems.map(({ label, section }) => { const href = portalHref(portalKey, section); const active = pathname === href; return <Link key={label} href={href} aria-current={active ? "page" : undefined} style={active ? { backgroundColor: "#1c1917", color: "#ffffff" } : undefined} className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${active ? "bg-stone-900 text-white" : "text-stone-500 hover:bg-white hover:text-stone-900"}`}>{label}</Link>; })}</nav>
       <div className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-600">Vivienda · {id}</div>
     </div>
@@ -137,9 +137,22 @@ function EmptyState({ icon: Icon, title, description }: { icon: typeof Inbox; ti
 function MobileNavigation({ id }: { id: string }) { const pathname = usePathname(); return <nav className="fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-stone-200/80 bg-white/95 p-1.5 shadow-[0_12px_40px_rgba(20,20,15,.16)] backdrop-blur-xl md:hidden" aria-label="Secciones del portal"><div className="grid grid-cols-5">{navItems.map(({ label, icon: Icon, section }) => { const href = portalHref(id, section); const active = pathname === href; return <Link key={label} href={href} aria-current={active ? "page" : undefined} style={active ? { backgroundColor: "#1c1917", color: "#ffffff" } : undefined} className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-medium transition-colors ${active ? "bg-stone-900 text-white" : "text-stone-500 active:bg-stone-100"}`}><Icon className="size-4 shrink-0" /><span className="max-w-full truncate">{label}</span></Link>; })}</div></nav>; }
 
 export function SystemPortal({ system, portalKey, view = "inicio" }: { system: SolarSystem; portalKey: string; view?: SystemPortalView }) {
+  const router = useRouter();
   const [toast, setToast] = useState("");
   const [requestType, setRequestType] = useState<RequestType | null>(null);
   const supportWhatsApp = process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP?.replace(/\D/g, "");
+  useEffect(() => {
+    const refresh = () => router.refresh();
+    const refreshWhenVisible = () => { if (document.visibilityState === "visible") refresh(); };
+    const interval = window.setInterval(refresh, 15_000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [router]);
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(""), 2200); };
   const openRequest = (type: RequestType) => setRequestType(type);
   return <div className="min-h-[100dvh] bg-[#faf9f6] text-stone-900"><Header id={system.id} portalKey={portalKey} /><main className="mx-auto min-h-[70vh] max-w-6xl space-y-12 px-5 pb-32 pt-8 md:px-8 md:pb-16 md:pt-12">{view === "inicio" && <><SystemSummary system={system} /><NextMaintenance system={system} onRequest={openRequest} /><Observations system={system} /></>}{view === "sistema" && <TechnicalProfile system={system} />}{view === "historial" && <MaintenanceHistory system={system} portalKey={portalKey} notify={notify} />}{view === "documentos" && <Documents system={system} notify={notify} />}{view === "soporte" && <QuickActions id={portalKey} openRequest={openRequest} />}</main><footer className="border-t border-stone-200 bg-white px-5 py-10 text-center text-xs text-stone-400"><div className="mb-2 flex items-center justify-center gap-2 font-semibold tracking-[.16em] text-stone-700"><ShieldCheck className="size-4 text-[#9b7835]" /> SOLARIS</div><div>Expediente de mantenimiento · {system.id}</div><div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">{supportWhatsApp ? <a href={`https://wa.me/${supportWhatsApp}`} target="_blank" rel="noreferrer" className="font-medium text-stone-600 underline decoration-stone-300 underline-offset-4">WhatsApp de soporte</a> : <Link href={portalHref(portalKey, "soporte")} className="font-medium text-stone-600 underline decoration-stone-300 underline-offset-4">Ayuda y contacto desde Soporte</Link>}<Link href={`/aviso-de-privacidad?returnTo=${encodeURIComponent(portalHref(portalKey, view === "inicio" ? "" : view))}`} className="font-medium text-stone-600 underline decoration-stone-300 underline-offset-4">Aviso de privacidad</Link></div><div className="mt-4">© 2026 Solaris · Todos los derechos reservados</div><Link href={portalHref(portalKey, "historial")} className="mt-3 inline-flex rounded-full border border-stone-200 px-3 py-1.5 font-medium text-stone-500 transition hover:border-stone-300 hover:text-stone-800">Consulta para técnicos · solo lectura</Link></footer><MobileNavigation id={portalKey} />{requestType && <RequestDialog type={requestType} systemId={system.id} portalKey={portalKey} close={() => setRequestType(null)} completed={notify} />}{toast && <div role="status" className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-white shadow-xl md:bottom-8">{toast}</div>}</div>;
