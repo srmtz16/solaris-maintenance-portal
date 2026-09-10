@@ -30,6 +30,12 @@ export async function getPublicSystem(portalKey: string): Promise<SolarSystem | 
       clientName: typeof data.clientName === "string" && data.clientName.trim() ? data.clientName.trim() : null,
       welcomeLabel: data.welcomeLabel === "Bienvenida" ? "Bienvenida" : "Bienvenido",
       installedPower: typeof data.installedPower === "number" ? `${data.installedPower.toFixed(2)} kWp` : "Sin registro",
+      numPanels: typeof data.numPanels === "number" ? String(data.numPanels) : "Sin registro",
+      panelPower: typeof data.panelPowerW === "number" ? `${data.panelPowerW.toLocaleString("es-MX")} W` : "Sin registro",
+      panelBrand: typeof data.panelBrand === "string" && data.panelBrand.trim() ? data.panelBrand.trim() : "Sin registro",
+      inverterModel: typeof data.inverterModel === "string" && data.inverterModel.trim() ? data.inverterModel.trim() : "Sin registro",
+      inverterSerial: typeof data.inverterSerial === "string" && data.inverterSerial.trim() ? data.inverterSerial.trim() : "Sin registro",
+      systemStatus: typeof data.systemStatus === "string" && data.systemStatus.trim() ? data.systemStatus.trim() : "Sin registro",
       installationDate: dateLabel(data.installationDate, true), lastMaintenance: dateLabel(data.lastMaintenance), nextMaintenance: dateLabel(data.nextMaintenance, true),
       maintenanceHistory: history.map((item: Record<string, unknown>) => ({ date: dateLabel(item.date), type: String(item.type || "Servicio"), status: "Completado", technician: String(item.technician || "Equipo Solaris"), hasReport: Boolean(item.hasReport), hasPhotos: Boolean(item.hasPhotos), hasObservations: Boolean(item.hasObservations) })),
       documents: documents.map((item: Record<string, unknown>) => ({

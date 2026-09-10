@@ -20,6 +20,12 @@ export type SolarSystem = {
   clientName: string | null;
   welcomeLabel: "Bienvenido" | "Bienvenida";
   installedPower: string;
+  numPanels: string;
+  panelPower: string;
+  panelBrand: string;
+  inverterModel: string;
+  inverterSerial: string;
+  systemStatus: string;
   installationDate: string;
   lastMaintenance: string;
   nextMaintenance: string;
@@ -33,6 +39,12 @@ export const system: SolarSystem = {
   clientName: "Karina de la Rosa",
   welcomeLabel: "Bienvenida",
   installedPower: "8.68 kWp",
+  numPanels: "14",
+  panelPower: "620 W",
+  panelBrand: "Sin registro",
+  inverterModel: "Sin registro",
+  inverterSerial: "Sin registro",
+  systemStatus: "Activo",
   installationDate: "Mayo 2026",
   lastMaintenance: "14 agosto 2026",
   nextMaintenance: "Agosto 2027",

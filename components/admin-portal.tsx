@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Bell, FolderOpen, Gauge, Home, LogOut, Menu, Plus, Settings, Sun, Users, Wrench, X } from "lucide-react";
 import { AdminDocuments } from "@/components/admin-documents";
+import { AdminClientSystem } from "@/components/admin-client-system";
 import { AdminRecords, type RealAdminView } from "@/components/admin-records";
 import { AdminSystemForm } from "@/components/admin-system-form";
 import type { AdminSystem } from "@/lib/admin-system";
@@ -35,7 +36,7 @@ function Header({ openMenu, title, newSystem }: { openMenu: () => void; title: s
   return <header className="sticky top-0 z-30 flex h-18 items-center justify-between border-b border-stone-200 bg-[#faf9f6]/90 px-5 backdrop-blur-xl md:px-8"><div className="flex items-center gap-3"><button onClick={openMenu} aria-label="Abrir menú" className="grid size-10 place-items-center rounded-xl border border-stone-200 bg-white lg:hidden"><Menu className="size-5" /></button><div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#9b7835]">Panel administrativo</p><h1 className="text-lg font-semibold tracking-tight text-stone-900">{title}</h1></div></div><div className="flex items-center gap-2"><Link href="/admin#solicitudes" aria-label="Solicitudes" className="relative grid size-10 place-items-center rounded-xl border border-stone-200 bg-white text-stone-500"><Bell className="size-4" /></Link><button onClick={newSystem} className="flex h-10 items-center gap-2 rounded-xl bg-stone-900 px-3 text-xs font-semibold text-white sm:px-4 sm:text-sm"><Plus className="size-4" /><span className="hidden sm:inline">Nuevo sistema</span><span className="sm:hidden">Nuevo</span></button></div></header>;
 }
 
-export function AdminPortal({ view = "dashboard" }: { view?: AdminView }) {
+export function AdminPortal({ view = "dashboard", systemCode }: { view?: AdminView; systemCode?: string }) {
   const [menu, setMenu] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<AdminSystem | null>(null);
@@ -49,5 +50,5 @@ export function AdminPortal({ view = "dashboard" }: { view?: AdminView }) {
     setToast(`${system.systemCode} guardado correctamente en Supabase.`);
     window.setTimeout(() => setToast(""), 3500);
   }
-  return <div className="min-h-screen bg-[#faf9f6] text-stone-900"><Sidebar open={menu} close={() => setMenu(false)} /><div className="lg:pl-72"><Header openMenu={() => setMenu(true)} title={titles[view]} newSystem={() => setCreateOpen(true)} /><main className="mx-auto max-w-[1500px] px-5 py-8 md:px-8 md:py-10">{view === "documentos" ? <AdminDocuments /> : <AdminRecords view={view} refreshKey={refreshKey} onEdit={setEditing} />}</main></div>{createOpen && <AdminSystemForm onClose={() => setCreateOpen(false)} onSaved={saved} />}{editing && <AdminSystemForm initial={editing} onClose={() => setEditing(null)} onSaved={saved} />}{toast && <div role="status" className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-white shadow-xl">{toast}</div>}</div>;
+  return <div className="min-h-screen bg-[#faf9f6] text-stone-900"><Sidebar open={menu} close={() => setMenu(false)} /><div className="lg:pl-72"><Header openMenu={() => setMenu(true)} title={systemCode || titles[view]} newSystem={() => setCreateOpen(true)} /><main className="mx-auto max-w-[1500px] px-5 py-8 md:px-8 md:py-10">{view === "documentos" ? <AdminDocuments /> : view === "clientes" && systemCode ? <AdminClientSystem systemCode={systemCode} refreshKey={refreshKey} onEdit={setEditing} /> : <AdminRecords view={view} refreshKey={refreshKey} onEdit={setEditing} />}</main></div>{createOpen && <AdminSystemForm onClose={() => setCreateOpen(false)} onSaved={saved} />}{editing && <AdminSystemForm initial={editing} onClose={() => setEditing(null)} onSaved={saved} />}{toast && <div role="status" className="fixed bottom-6 left-1/2 z-[100] -translate-x-1/2 rounded-full bg-stone-900 px-5 py-3 text-sm font-medium text-white shadow-xl">{toast}</div>}</div>;
 }
