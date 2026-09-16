@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es" className="bg-[#faf9f6]"><body className="bg-[#faf9f6] font-sans antialiased">{children}</body></html>;
+  return <html lang="es" className="bg-[#F5F7FA]"><body className="bg-[#F5F7FA] font-sans antialiased">{children}</body></html>;
 }

@@ -1,0 +1,63 @@
+/* Approved Solaris palette and responsive premium client shell. */
+.solaris-header {
+  background: radial-gradient(ellipse at 0% 0%, #17303b, transparent 65%), #06131b;
+  border-color: #f4b40026;
+}
+.solaris-brand > div:first-child { color: #f4b400; filter: drop-shadow(0 0 7px #f4b40033); }
+.solaris-home-id { background: #ffffff08; border-color: #ffffff1c; color: #f4b400; }
+.solaris-main { width: 100%; background: radial-gradient(ellipse at 100% 0%, #fff, transparent 55%), #f5f7fa; }
+.solaris-metrics { gap: 10px; overflow: visible; background: transparent; border: 0; border-radius: 0; box-shadow: none; }
+.solaris-metrics > div { background: #fff; border: 1px solid #e4e9ee !important; border-radius: 14px; box-shadow: 0 4px 18px #06131b03; }
+.solaris-maintenance {
+  background: radial-gradient(ellipse at 100% 110%, #d9a2211f, transparent 57%), linear-gradient(125deg, #112631, #06131b 68%);
+  border-radius: 22px;
+  box-shadow: inset 0 1px 0 #ffffff17, inset 0 -1px 0 #f4b40030, 0 16px 32px #06131b12;
+}
+.solaris-maintenance > div:first-child { opacity: .35; }
+.solaris-maintenance button { border-radius: 12px; }
+.solaris-maintenance button:first-child {
+  background: linear-gradient(115deg, #ffe69c, #ffd966 18%, #f4b400 68%, #daa315);
+  color: #06131b;
+  box-shadow: inset 0 1px 0 #ffffff88, 0 3px 12px #f4b40012;
+}
+.solaris-maintenance button:first-child:hover { box-shadow: inset 0 1px 0 #ffffff99, 0 0 22px #f4b40030; }
+.solaris-observations { background: #fff; border-color: #e1e6eb; border-radius: 16px; }
+.solaris-footer { background: #f5f7fa; border-color: #e4e9ee; }
+.solaris-desktop-nav a { display: flex; align-items: center; gap: 12px; }
+.solaris-portal nav a[aria-current="page"] {
+  background: radial-gradient(ellipse at 50% 125%, #f4b40055, transparent 75%), linear-gradient(125deg, #ffd9660d, #f4b40005);
+  background-color: #06131b !important;
+  color: #ffe5a0 !important;
+  box-shadow: inset 0 -1px 0 #ffd96680, inset 0 1px 0 #ffd96615, 0 4px 18px #f4b4000d;
+}
+.solaris-mobile-nav { background: linear-gradient(130deg, #10232d, #06131b); border-color: #f4b40026; }
+.solaris-portal button:not(:disabled):active, .solaris-portal a:active {
+  background-image: radial-gradient(ellipse at 50% 110%, #f4b40070, transparent 83%);
+  box-shadow: inset 0 0 22px #ffd96626, 0 0 24px #f4b40038;
+}
+@media (min-width: 768px) {
+  .solaris-portal { display: grid; grid-template-columns: 190px minmax(0, 1fr); align-content: start; }
+  .solaris-header { grid-column: 1; grid-row: 1 / 3; border-bottom: 0; border-right: 1px solid #ffffff08; }
+  .solaris-header-inner { position: sticky; top: 0; min-height: 100dvh; max-height: 100dvh; overflow-y: auto; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 34px; padding: 30px 18px; }
+  .solaris-brand { gap: 8px; }
+  .solaris-brand > div:first-child { flex-shrink: 0; width: 30px; height: 30px; }
+  .solaris-brand > div:last-child > div:last-child { font-size: 8px; }
+  .solaris-desktop-nav { flex-direction: column; align-items: stretch; gap: 10px; }
+  .solaris-desktop-nav a { border-radius: 12px; padding: 14px 10px; }
+  .solaris-home-id { margin-top: auto; text-align: center; border-radius: 10px; padding: 12px 6px; }
+  .solaris-main { grid-column: 2; padding-top: 36px; padding-bottom: 32px; min-height: 70vh; }
+  .solaris-main > * + * { margin-top: 28px; }
+  .solaris-footer { grid-column: 2; padding-top: 22px; padding-bottom: 22px; }
+  .solaris-maintenance { padding: 28px; }
+  .solaris-maintenance > .relative { grid-template-columns: minmax(0, 1fr); }
+  .solaris-maintenance > .relative > div:last-child { min-width: 0; }
+}
+@media (min-width: 1100px) {
+  .solaris-maintenance > .relative { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .solaris-maintenance > .relative > div:last-child { grid-template-columns: 1fr; min-width: 210px; }
+}
+@media (max-width: 767px) {
+  .solaris-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .solaris-metrics > div { padding: 16px 13px; }
+  .solaris-metrics > div > div:last-child { font-size: 16px; overflow-wrap: anywhere; }
+}
