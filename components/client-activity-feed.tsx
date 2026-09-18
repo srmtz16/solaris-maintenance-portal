@@ -9,7 +9,7 @@ const filters: Filter[] = ["Todo", "Mantenimientos", "Fotografías", "Documentos
 const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 function serviceTime(label: string) {
   const match = label.match(/(\d{1,2}) de (\w+) de (\d{4})/);
-  return match && months.includes(match[2]) ? Date.UTC(Number(match[3]), months.indexOf(match[2]), Number(match[1])) : 0;
+  return match && months.includes(match[2]) ? Date.UTC(Number(match[3]), months.indexOf(match[2]), Number(match[1]), 12) : 0;
 }
 function isPhoto(doc: SystemDocument) {
   return /foto|imagen|galer[ií]a|png|jpe?g|webp/i.test(`${doc.type} ${doc.name}`);
