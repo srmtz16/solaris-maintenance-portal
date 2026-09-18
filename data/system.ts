@@ -1,4 +1,8 @@
 export type MaintenanceItem = {
+  id?: string;
+  work?: string;
+  findings?: string;
+  recommendations?: string;
   date: string;
   type: string;
   status: string;
