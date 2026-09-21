@@ -1,29 +1,44 @@
 "use client";
+import { useEffect, useState } from "react";
 
-import { useState } from "react";
-import { ArrowUpRight } from "lucide-react";
-
+function whatsappUrl(phone: string, form?: FormData) {
+  const value = (key: string) => String(form?.get(key) || "").trim();
+  const message = ["Hola, quiero cotizar un mantenimiento para mi sistema fotovoltaico.", "", `Número aproximado de paneles: ${value("panels")}`, `Zona: ${value("zone")}`, `¿Presenta alguna falla? ${value("failure") || "Sí / No"}`, ...(form ? ["", `Nombre: ${value("name")}`, `Teléfono: ${value("phone")}`, `Tipo de instalación: ${value("installation")}`, ...(value("comments") ? [`Comentarios: ${value("comments")}`] : [])] : [])].join("\n");
+  return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
+}
+export function FloatingQuote({ whatsapp }: { whatsapp: string }) {
+  const [hidden, setHidden] = useState(true);
+  useEffect(() => {
+    const visible = new Set<string>();
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => entry.isIntersecting ? visible.add(entry.target.id) : visible.delete(entry.target.id));
+      setHidden(visible.size > 0);
+    });
+    ["hero", "contacto"].forEach(id => { const element = document.getElementById(id); if (element) observer.observe(element); });
+    return () => observer.disconnect();
+  }, []);
+  return <a href={whatsappUrl(whatsapp)} target="_blank" rel="noreferrer" className="landing-floating" hidden={hidden}>Cotiza tu mantenimiento <span aria-hidden="true">↗</span></a>;
+}
 export function ProspectContact({ whatsapp }: { whatsapp: string }) {
-  const [message, setMessage] = useState("");
-  return <form onSubmit={event => {
+  const [prepared, setPrepared] = useState("");
+  return <form className="landing-form" onChange={() => setPrepared("")} onSubmit={event => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    if (!whatsapp) { setMessage("El canal de atención estará disponible próximamente."); return; }
-    const text = `Hola, Solaris. Me gustaría solicitar ${data.get("request")}.\n\nNombre: ${String(data.get("name")).trim()}\nZona: ${String(data.get("zone")).trim()}\nServicio: ${data.get("service")}\n\n${String(data.get("details")).trim()}`;
-    window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
-    setMessage("Se abrió WhatsApp con tu solicitud preparada. Pulsa Enviar allí para compartirla con Solaris. La visita queda pendiente de confirmación.");
-  }} className="space-y-5 rounded-[2rem] border border-stone-200 bg-white p-6 text-stone-900 md:p-9">
-    <h3 className="text-2xl font-semibold tracking-tight">Cuéntanos qué necesitas</h3>
-    <p className="text-sm leading-6 text-stone-500">Prepara tu solicitud y envíala directamente a nuestro equipo por WhatsApp.</p>
-    <div className="grid gap-4 sm:grid-cols-2">
-      <label className="text-sm font-medium">Tu nombre<input required name="name" autoComplete="given-name" maxLength={100} className="mt-2 w-full rounded-xl border border-stone-200 p-3 focus:outline-[#F4B400]" /></label>
-      <label className="text-sm font-medium">Ciudad o zona<input required name="zone" autoComplete="address-level2" maxLength={150} placeholder="¿Dónde necesitas el servicio?" className="mt-2 w-full rounded-xl border border-stone-200 p-3 focus:outline-[#F4B400]" /></label>
-      <label className="text-sm font-medium">Quiero solicitar<select name="request" className="mt-2 w-full rounded-xl border border-stone-200 bg-white p-3"><option>una cotización</option><option>una visita</option><option>más información</option></select></label>
-      <label className="text-sm font-medium">Servicio<select name="service" className="mt-2 w-full rounded-xl border border-stone-200 bg-white p-3"><option>Mantenimiento fotovoltaico</option><option>Revisión y diagnóstico</option><option>Gestoría de interconexión</option><option>Trámite de nuevo servicio</option><option>Cambio a medidor bidireccional</option><option>Necesito orientación</option></select></label>
+    const url = whatsappUrl(whatsapp, new FormData(event.currentTarget));
+    setPrepared(url);
+    window.open(url, "_blank", "noopener,noreferrer");
+  }}>
+    <h3>Cuéntanos sobre tu sistema</h3>
+    <div className="landing-fields">
+      <label>Nombre<input required name="name" autoComplete="name" maxLength={100} pattern={".*\\S.*"} /></label>
+      <label>Teléfono<input required name="phone" type="tel" inputMode="tel" autoComplete="tel" minLength={10} maxLength={20} pattern={"[+0-9\\s\\(\\)\\-]{10,20}"} /></label>
+      <label>Número aproximado de paneles<input required name="panels" type="number" inputMode="numeric" min={1} max={100000} step={1} /></label>
+      <label>Zona / ubicación general<input required name="zone" autoComplete="address-level2" maxLength={150} placeholder="Ciudad o colonia" pattern={".*\\S.*"} /></label>
+      <label>Tipo de instalación<select required name="installation" defaultValue=""><option value="" disabled>Selecciona</option><option>Residencial</option><option>Comercial</option></select></label>
+      <label>¿Presenta alguna falla?<select required name="failure" defaultValue=""><option value="" disabled>Selecciona</option><option>Sí</option><option>No</option></select></label>
     </div>
-    <label className="block text-sm font-medium">Detalles <span className="font-normal text-stone-400">(opcional)</span><textarea name="details" maxLength={1500} rows={4} placeholder="Cuéntanos sobre tu instalación o el trámite que necesitas." className="mt-2 w-full rounded-xl border border-stone-200 p-3 focus:outline-[#F4B400]" /></label>
-    <p className="text-xs leading-5 text-stone-500">El formulario prepara un mensaje; los datos se comparten cuando tú lo envías por WhatsApp. Evita incluir documentos personales o datos de tu cuenta en esta primera consulta.</p>
-    <button disabled={!whatsapp} className="flex w-full items-center justify-center gap-2 rounded-full bg-[#F4B400] px-5 py-4 font-semibold text-[#06131B] transition hover:bg-[#FFD966] hover:shadow-[0_0_30px_#F4B40055] disabled:opacity-50">Continuar en WhatsApp <ArrowUpRight className="size-4" /></button>
-    {message && <p role="status" className="rounded-xl bg-[#FFF6D9] p-4 text-sm leading-6">{message}</p>}
+    <label>Comentarios <span>(opcional)</span><textarea name="comments" maxLength={1500} rows={3} placeholder="Describe la falla o indica si necesitas una visita, otro servicio o más información." /></label>
+    <p className="landing-form-note">Prepararemos tu mensaje para WhatsApp. Tú confirmas el envío; la fecha y el precio se acuerdan con nuestro equipo.</p>
+    <button type="submit" className="landing-primary">Solicitar cotización <span aria-hidden="true">↗</span></button>
+    {prepared && <p role="status" className="landing-form-status">Tu solicitud está preparada. Si no se abrió WhatsApp, <a href={prepared} target="_blank" rel="noreferrer">continúa aquí</a> y pulsa Enviar.</p>}
   </form>;
 }
