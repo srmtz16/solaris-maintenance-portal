@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {emptyService,organizeNotes,factualConclusion,validateService,reportFilename} from '../lib/service-report.ts';
+const draft=()=>({...emptyService(),date:'2026-09-20',technician:'Técnico de prueba',location:'Instalación de prueba'});
+test('notes keep decimal measurements and do not add activities',()=>assert.equal(organizeNotes('Voc 44.5 V. Limpieza de módulos.\nRevisión de cajas.'),'Voc 44.5 V.\nLimpieza de módulos.\nRevisión de cajas.'));
+test('unknown operation stays unknown in default conclusion',()=>{const d=draft();d.originalNotes='Se limpiaron los módulos.';const c=factualConclusion(d);assert.match(c,/No fue posible verificar operación/);assert.doesNotMatch(c,/operación normal/i);});
+test('final report needs technician confirmation and explicit conclusion',()=>{const d={...draft(),originalNotes:'Se limpió un módulo.',activities:'Se limpió un módulo.'};assert.match(validateService(d,true),/conclusión/);d.conclusion=factualConclusion(d);assert.match(validateService(d,true),/Confirma/);d.verified=true;assert.equal(validateService(d,true),null);});
+test('empty measurements are optional but partial measurements fail',()=>{const d=draft();assert.equal(validateService(d),null);d.measurements=[{id:'m',parameter:'Voltaje',value:'',unit:'V',observation:''}];assert.match(validateService(d),/medición/);});
+test('photos cannot refer to a deleted or unrelated finding',()=>{const d=draft();d.photos=[{id:'p',path:'p',description:'Foto',category:'Antes',findingIds:['missing']}];assert.match(validateService(d),/hallazgos/);});
+test('dates and next maintenance dates are validated',()=>{const d=draft();d.date='2026-02-30';assert.match(validateService(d),/fecha/);d.date='2026-09-20';d.nextDate='2026-09-19';assert.match(validateService(d),/posterior/);});
+test('filename is deterministic and safe for a download',()=>assert.equal(reportFilename({folio:'SOL-0024',customer_name:'Rafael Otero / prueba',data:{date:'2026-09-21'}}),'SOLARIS_Reporte_SOL-0024_Rafael-Otero-prueba_21-09-2026.pdf'));
