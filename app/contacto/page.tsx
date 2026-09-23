@@ -1,0 +1,9 @@
+import { MessageCircle, ArrowUpRight } from "lucide-react";
+import { MarketingSite, marketingMetadata } from "@/components/marketing-site";
+import { ProspectContact } from "@/components/prospect-contact";
+import { SOLARIS_WHATSAPP, contactTopic, whatsappUrl } from "@/lib/prospect-contact";
+export const metadata = marketingMetadata("Contacto y cotizaciones en Yucatán | SOLARIS Energy Solutions", "Solicita orientación sobre Pasaporte Solar, mantenimiento fotovoltaico o gestoría CFE. Contacta a SOLARIS en Yucatán por WhatsApp.", "/contacto");
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ servicio?: string | string[] }> }) {
+  const topic = contactTopic((await searchParams).servicio);
+  return <MarketingSite topic={topic}><section id="contacto" className="contact-page"><div className="landing-wrap landing-section contact-grid"><div className="contact-copy"><p className="landing-eyebrow">Contacto · Yucatán</p><h1>Hablemos<br /><span>de tu sistema.</span></h1><p className="landing-lead">Ya sea mantenimiento, un trámite o tu Pasaporte Solar, te ayudamos a encontrar el siguiente paso.</p><a className="direct-whatsapp" href={whatsappUrl(SOLARIS_WHATSAPP, topic)} target="_blank" rel="noreferrer"><MessageCircle aria-hidden="true" /><span>¿Prefieres escribirnos directamente?<strong>Abrir WhatsApp <ArrowUpRight size={16} aria-hidden="true" /></strong></span></a><address><a href="tel:+527778311043">777 831 1043</a><a href="mailto:solarisenergysolutions.mx@gmail.com">solarisenergysolutions.mx@gmail.com</a></address><ol className="contact-steps"><li><span>01</span> Nos cuentas qué necesitas</li><li><span>02</span> Definimos la propuesta contigo</li><li><span>03</span> Acordamos cómo comenzar</li></ol></div><ProspectContact key={topic} whatsapp={SOLARIS_WHATSAPP} initialTopic={topic} /></div></section></MarketingSite>;
+}
