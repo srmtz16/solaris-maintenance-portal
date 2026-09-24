@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { ExternalLink, FileImage, FileText, LoaderCircle, Plus, Upload, X } from "lucide-react";
+import { ExternalLink, FileImage, FileText, LoaderCircle, Plus, Trash2, Upload, X } from "lucide-react";
 import { buildDocumentPath, DOCUMENT_BUCKET, documentTypes, sha256ForFile, type DocumentType, validateAdminDocument } from "@/lib/admin-document";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -33,6 +33,7 @@ export function AdminDocuments({ fixedSystemCode }: { fixedSystemCode?: string }
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | number | null>(null);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -131,6 +132,25 @@ export function AdminDocuments({ fixedSystemCode }: { fixedSystemCode?: string }
     setMessage({ kind: "ok", text: `Documento publicado en ${systemCode}. Ya está visible para el cliente.` });
   }
 
+  async function removeDocument(document: DocumentRow) {
+    if (deleting !== null) return;
+    const name = document.original_name || document.description || "Archivo";
+    if (!window.confirm(`¿Eliminar "${name}" del expediente ${document.system_id}?\n\nDejará de aparecer para el cliente. El archivo publicado se eliminará del almacenamiento si no está compartido con otro registro. Los enlaces externos se desvinculan solamente. Esta acción no se puede deshacer. El historial del mantenimiento y las versiones privadas de reportes se conservan.`)) return;
+    setDeleting(document.id);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/admin/documents?id=${encodeURIComponent(document.id)}`, { method: "DELETE" });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error(result.error || "No fue posible eliminar el archivo.");
+      setDocuments(current => current.filter(item => item.id !== document.id));
+      setMessage({ kind: "ok", text: `Archivo eliminado del expediente ${document.system_id}. Ya no aparecerá en los documentos del cliente.` });
+    } catch (error) {
+      setMessage({ kind: "error", text: error instanceof Error ? error.message : "No se pudo completar la eliminación. Revisa tu conexión e intenta nuevamente." });
+    } finally {
+      setDeleting(null);
+    }
+  }
+
   return <div className="space-y-8">
     <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
       <div><p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#8A6200]">Archivos reales{fixedSystemCode ? ` · ${fixedSystemCode}` : ""}</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.035em] md:text-4xl">Documentos</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-stone-500">{fixedSystemCode ? `Todo archivo cargado aquí quedará vinculado exclusivamente a ${fixedSystemCode}.` : "Sube diagramas, reportes y fotografías al expediente correcto. El cliente los verá inmediatamente desde su mismo QR."}</p></div>
@@ -144,7 +164,7 @@ export function AdminDocuments({ fixedSystemCode }: { fixedSystemCode?: string }
     {loading ? <div className="flex min-h-56 items-center justify-center rounded-3xl border border-stone-200 bg-white text-sm text-stone-500"><LoaderCircle className="mr-2 size-5 animate-spin" />Consultando Supabase…</div> : documents.length === 0 ? <div className="rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center"><FileText className="mx-auto size-8 text-stone-300" /><h3 className="mt-4 font-semibold">Aún no hay documentos</h3><p className="mt-2 text-sm text-stone-500">Sube el primer archivo para {systemCode || "un sistema"}.</p></div> : <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{documents.map((document) => {
       const image = document.document_type?.toLowerCase().includes("foto");
       const Icon = image ? FileImage : FileText;
-      return <article key={document.id} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-[0_12px_35px_rgba(28,25,20,.04)]"><div className="flex items-start justify-between"><span className="grid size-11 place-items-center rounded-2xl bg-[#FFF6D9] text-[#8A6200]"><Icon className="size-5" /></span><span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">{document.system_id}</span></div><h3 className="mt-5 text-sm font-semibold">{document.description || document.document_type || "Documento"}</h3><p className="mt-1 truncate text-xs text-stone-400">{document.original_name || document.document_type || "Archivo"}</p>{document.file_size_bytes ? <p className="mt-1 text-[11px] text-stone-400">{(document.file_size_bytes / 1024 / 1024).toFixed(2)} MB · {document.storage_provider || "Supabase"}</p> : null}<div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4"><time className="text-xs text-stone-500">{formatDate(document.created_at)}</time><a href={document.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-semibold text-[#8a692e]">Abrir <ExternalLink className="size-3" /></a></div></article>;
+      return <article key={document.id} className="rounded-3xl border border-stone-200 bg-white p-5 shadow-[0_12px_35px_rgba(28,25,20,.04)]"><div className="flex items-start justify-between"><span className="grid size-11 place-items-center rounded-2xl bg-[#FFF6D9] text-[#8A6200]"><Icon className="size-5" /></span><span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-semibold text-stone-600">{document.system_id}</span></div><h3 className="mt-5 text-sm font-semibold">{document.description || document.document_type || "Documento"}</h3><p className="mt-1 truncate text-xs text-stone-400">{document.original_name || document.document_type || "Archivo"}</p>{document.file_size_bytes ? <p className="mt-1 text-[11px] text-stone-400">{(document.file_size_bytes / 1024 / 1024).toFixed(2)} MB · {document.storage_provider || "Supabase"}</p> : null}<div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4"><time className="text-xs text-stone-500">{formatDate(document.created_at)}</time><a href={document.file_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-semibold text-[#8a692e]">Abrir <ExternalLink className="size-3" /></a></div><button type="button" disabled={deleting !== null} onClick={() => void removeDocument(document)} aria-label={`Eliminar ${document.original_name || document.description || "archivo"} de ${document.system_id}`} className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-200 px-3 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-50">{deleting === document.id ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}{deleting === document.id ? "Eliminando…" : "Eliminar"}</button></article>;
     })}</div>}
 
     {open && <div role="dialog" aria-modal="true" aria-labelledby="upload-title" className="fixed inset-0 z-[80] grid place-items-center bg-stone-950/45 px-4 py-8 backdrop-blur-sm"><div className="max-h-full w-full max-w-lg overflow-y-auto rounded-[2rem] bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-[.16em] text-[#8A6200]">Nuevo archivo</p><h3 id="upload-title" className="mt-2 text-2xl font-semibold">Publicar documento</h3></div><button type="button" onClick={closeDialog} aria-label="Cerrar" className="grid size-10 place-items-center rounded-xl bg-stone-100"><X className="size-4" /></button></div><form onSubmit={submit} className="mt-7 space-y-5"><label className="block text-sm font-medium">Sistema<select required disabled={Boolean(fixedSystemCode)} value={systemCode} onChange={(event) => setSystemCode(event.target.value)} className="mt-2 h-12 w-full rounded-xl border border-stone-200 bg-white px-4 disabled:bg-stone-100 disabled:text-stone-600">{systems.map((system) => <option key={system.system_code}>{system.system_code}</option>)}</select>{fixedSystemCode && <span className="mt-2 block text-xs text-stone-500">Sistema bloqueado para evitar guardar el archivo en otro cliente.</span>}</label><label className="block text-sm font-medium">Tipo<select value={type} onChange={(event) => setType(event.target.value as DocumentType)} className="mt-2 h-12 w-full rounded-xl border border-stone-200 bg-white px-4">{documentTypes.map((item) => <option key={item}>{item}</option>)}</select></label><label className="block text-sm font-medium">Título o descripción<input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Ej. Diagrama unifilar final" className="mt-2 h-12 w-full rounded-xl border border-stone-200 px-4" /></label><label className="block text-sm font-medium">Archivo<input ref={inputRef} required type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" onChange={(event) => setFile(event.target.files?.[0] ?? null)} className="mt-2 block w-full rounded-xl border border-dashed border-stone-300 p-4 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-stone-900 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white" /><span className="mt-2 block text-xs text-stone-400">PDF, PNG, JPG o JPEG · máximo 15 MB</span></label>{message?.kind === "error" && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{message.text}</p>}<button disabled={saving} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-stone-900 font-semibold text-white disabled:opacity-60">{saving ? <LoaderCircle className="size-4 animate-spin" /> : <Upload className="size-4" />}{saving ? "Publicando…" : `Publicar en ${systemCode}`}</button></form></div></div>}
