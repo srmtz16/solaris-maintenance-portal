@@ -21,12 +21,12 @@ export function AdminLogin() {
       const supabase = getSupabaseBrowserClient();
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (signInError || !data.user) throw new Error("Correo o contraseña incorrectos.");
-      if (data.user.app_metadata?.role !== "admin") {
+      if (!["admin", "viewer"].includes(data.user.app_metadata?.role)) {
         await supabase.auth.signOut();
-        throw new Error("Esta cuenta no tiene permiso de administrador.");
+        throw new Error("Esta cuenta no tiene permiso de acceso al portal.");
       }
       const next = searchParams.get("next");
-      router.replace(next?.startsWith("/admin") && next !== "/admin/login" ? next : "/admin/documentos");
+      router.replace(data.user.app_metadata?.role === "viewer" ? "/consulta" : next?.startsWith("/admin") && next !== "/admin/login" ? next : "/admin/documentos");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "No fue posible iniciar sesión.");
