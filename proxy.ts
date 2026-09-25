@@ -24,7 +24,12 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const appMetadata = data?.claims.app_metadata as Record<string, unknown> | undefined;
   const isAdmin = appMetadata?.role === "admin";
+  const isViewer = appMetadata?.role === "viewer";
   const isLogin = request.nextUrl.pathname === "/admin/login";
+  const isConsultation = request.nextUrl.pathname === "/consulta";
+
+  if (isViewer && !isConsultation) return NextResponse.redirect(new URL("/consulta", request.url));
+  if (isViewer && isConsultation) return response;
 
   if (!isAdmin && !isLogin) {
     const loginUrl = new URL("/admin/login", request.url);
@@ -40,5 +45,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/consulta"],
 };
