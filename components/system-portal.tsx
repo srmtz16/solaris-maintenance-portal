@@ -3,9 +3,10 @@
 import {
   ArrowRight, CalendarDays, Camera, Check, ChevronRight, ClipboardCheck,
   FileText, FolderOpen, Gauge, Headphones, History, Home, Images, LayoutGrid,
-  MessageSquareText, ShieldCheck, Sparkles, Sun, Wrench, X, Inbox,
+  MessageSquareText, ShieldCheck, Sparkles, Wrench, X, Inbox,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { SystemEquipment } from "@/components/system-equipment";
 import { ClientActivityFeed } from "./client-activity-feed";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,7 +29,7 @@ function Header({ id, portalKey }: { id: string; portalKey: string }) {
   const pathname = usePathname();
   return <header className="solaris-header border-b border-white/10 bg-[#06131B]/95 backdrop-blur-xl">
     <div className="solaris-header-inner mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
-      <Link href={portalHref(portalKey, "")} className="solaris-brand flex items-center gap-3"><div className="grid size-10 place-items-center rounded-full bg-[#06131B] text-[#F4B400]"><Sun className="size-5" /></div><div><div className="text-sm font-semibold tracking-[.18em] text-white">SOLARIS</div><div className="text-[10px] uppercase tracking-[.2em] text-[#F4B400]">Pasaporte solar</div></div></Link>
+      <Link href={portalHref(portalKey, "")} className="solaris-brand flex items-center gap-3"><Image src="/solaris-brand.webp" alt="Logo de SOLARIS" width={40} height={40} unoptimized className="size-10 shrink-0 rounded-xl object-contain" /><div><div className="text-sm font-semibold tracking-[.18em] text-white">SOLARIS</div><div className="text-[10px] uppercase tracking-[.2em] text-[#F4B400]">Pasaporte solar</div></div></Link>
       <nav className="solaris-desktop-nav hidden items-center gap-1 md:flex" aria-label="Secciones del portal">{navItems.map(({ label, icon: Icon, section }) => { const href = portalHref(portalKey, section); const active = pathname === href; return <Link key={label} href={href} aria-current={active ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${active ? "bg-[#F4B400] text-[#06131B]" : "text-stone-200 hover:bg-white/10 hover:text-white"}`}><Icon className="size-4 shrink-0" />{label}</Link>; })}</nav>
       <div className="solaris-home-id rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-[#F4B400]">Vivienda · {id}</div>
     </div>

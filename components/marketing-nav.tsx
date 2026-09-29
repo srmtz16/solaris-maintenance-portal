@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
@@ -19,7 +20,7 @@ export function MarketingNav() {
     return () => { document.removeEventListener("keydown", escape); document.removeEventListener("pointerdown", outside); };
   }, []);
   return <header className="landing-nav" ref={header}><div className="landing-wrap nav-inner">
-    <Link href="/" className="landing-brand" aria-label="SOLARIS Energy Solutions, inicio" onClick={close}>SOLARIS<span>ENERGY SOLUTIONS</span></Link>
+    <Link href="/" className="landing-brand" style={{ display: "flex", alignItems: "center", gap: 12 }} aria-label="SOLARIS Energy Solutions, inicio" onClick={close}><Image src="/solaris-brand.webp" alt="Logo de SOLARIS" width={44} height={44} unoptimized style={{ flexShrink: 0, borderRadius: 10 }} /><div>SOLARIS<span>ENERGY SOLUTIONS</span></div></Link>
     <button ref={toggle} className="mobile-menu" aria-expanded={open} aria-controls="commercial-nav" aria-label={open ? "Cerrar menú" : "Abrir menú"} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
     <nav id="commercial-nav" aria-label="Navegación principal" data-open={open}>
       <Link href="/" aria-current={path === "/" ? "page" : undefined} onClick={close}>Inicio</Link>
