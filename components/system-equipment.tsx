@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { SOLARIS_WHATSAPP, whatsappUrl } from "@/lib/prospect-contact";
 import { useCallback, useEffect, useId, useState } from "react";
 import { BatteryCharging, CarFront, Sun, LoaderCircle } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -71,7 +71,7 @@ export function SystemEquipment({ portalKey, systemCode }: { portalKey?: string;
       <div className="grid gap-5 px-5 pb-6 pt-2 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-slate-300 md:px-8 md:pb-8">{devices.map(({ key, label, icon: Icon }) => <div key={key} className="flex items-center gap-3 sm:flex-col sm:px-5 sm:text-center"><Icon className={`size-9 shrink-0 sm:size-12 ${equipment[key] ? "text-[#E8AB00]" : "text-slate-400"}`} /><div className="min-w-0 flex-1"><p className="text-base font-semibold text-[#06131B] md:text-lg">{label}</p>{admin ? <select aria-label={label} disabled={saving} value={String(equipment[key] === true)} onChange={event => { setMessage(""); setEquipment(current => ({ ...current, [key]: event.target.value === "true" })); }} className="mt-2 min-h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm"><option value="true">Instalado</option><option value="false">Aún no instalado</option></select> : <p className="mt-1 text-sm text-slate-500">{equipment[key] === true ? "Instalado" : "Aún no instalado"}</p>}</div></div>)}</div>
       {!admin && <p className="px-5 pb-5 text-center text-[11px] leading-5 text-stone-500">Ilustración de referencia. Amarillo: instalado · Gris: aún no instalado.</p>}
     </div>}
-    {admin ? <><button type="button" disabled={loading || saving || !ready} onClick={() => void save()} className="min-h-11 rounded-xl bg-[#F4B400] px-5 text-sm font-semibold text-[#06131B] disabled:opacity-50">{saving ? "Guardando…" : "Guardar equipos"}</button>{message && <p role="status" className="text-sm text-emerald-700">{message}</p>}</> : <div className="text-center"><p className="text-sm text-stone-500">¿Quieres ampliar tu sistema? Podemos orientarte.</p><Link href={`/s/${portalKey}/soporte`} className="mt-3 inline-flex min-h-11 items-center rounded-full border border-[#06131B] px-5 text-sm font-semibold text-[#06131B]">Consultar a SOLARIS</Link></div>}
+    {admin ? <><button type="button" disabled={loading || saving || !ready} onClick={() => void save()} className="min-h-11 rounded-xl bg-[#F4B400] px-5 text-sm font-semibold text-[#06131B] disabled:opacity-50">{saving ? "Guardando…" : "Guardar equipos"}</button>{message && <p role="status" className="text-sm text-emerald-700">{message}</p>}</> : <div className="text-center"><p className="text-sm text-stone-500">¿Quieres ampliar tu sistema? Podemos orientarte.</p><a href={whatsappUrl(SOLARIS_WHATSAPP, "Orientación")} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center rounded-full border border-[#06131B] px-5 text-sm font-semibold text-[#06131B]">Consultar a SOLARIS</a></div>}
   </section>;
 }
 
