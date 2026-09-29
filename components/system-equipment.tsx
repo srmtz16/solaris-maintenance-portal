@@ -21,7 +21,7 @@ export function EquipmentHouse({ equipment }: { equipment: Equipment }) {
   return <svg viewBox="0 70 1672 800" role="img" aria-label="Ilustración residencial con paneles solares, cargador eléctrico y baterías. Solo los equipos registrados como instalados se muestran en amarillo." className="block h-auto w-full">
     <defs>
       <filter id={id + "-gray"} colorInterpolationFilters="sRGB"><feColorMatrix type="saturate" values="0" /></filter>
-      {devices.map(({ key }) => <clipPath id={id + "-" + key} key={key}><rect x={regions[key][0]} y={regions[key][1]} width={regions[key][2]} height={regions[key][3]} /></clipPath>)}
+      {devices.map(({ key }) => <clipPath id={id + "-" + key} key={key}>{key === "solar" ? <polygon points="421,275 584,154 1111,191 1110,211 975,321" /> : <rect x={regions[key][0]} y={regions[key][1]} width={regions[key][2]} height={regions[key][3]} />}</clipPath>)}
     </defs>
     <image href={asset} width="1672" height="941" filter={"url(#" + id + "-gray)"} />
     {devices.map(({ key }) => equipment[key] === true && <image key={key} href={asset} width="1672" height="941" clipPath={"url(#" + id + "-" + key + ")"} />)}
@@ -74,4 +74,5 @@ export function SystemEquipment({ portalKey, systemCode }: { portalKey?: string;
     {admin ? <><button type="button" disabled={loading || saving || !ready} onClick={() => void save()} className="min-h-11 rounded-xl bg-[#F4B400] px-5 text-sm font-semibold text-[#06131B] disabled:opacity-50">{saving ? "Guardando…" : "Guardar equipos"}</button>{message && <p role="status" className="text-sm text-emerald-700">{message}</p>}</> : <div className="text-center"><p className="text-sm text-stone-500">¿Quieres ampliar tu sistema? Podemos orientarte.</p><Link href={`/s/${portalKey}/soporte`} className="mt-3 inline-flex min-h-11 items-center rounded-full border border-[#06131B] px-5 text-sm font-semibold text-[#06131B]">Consultar a SOLARIS</Link></div>}
   </section>;
 }
+
 
