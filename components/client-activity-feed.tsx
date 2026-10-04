@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Camera, ChevronDown, FileText, History, Sparkles } from "lucide-react";
 import type { SolarSystem, SystemDocument } from "@/data/system";
+import { isPortalDocumentUrl } from "@/lib/document-access";
 
 type Filter = "Todo" | "Mantenimientos" | "Fotografías" | "Documentos";
 const filters: Filter[] = ["Todo", "Mantenimientos", "Fotografías", "Documentos"];
@@ -15,7 +16,7 @@ function isPhoto(doc: SystemDocument) {
   return /foto|imagen|galer[ií]a|png|jpe?g|webp/i.test(`${doc.type} ${doc.name}`);
 }
 function imageUrl(doc: SystemDocument) {
-  return doc.fileUrl && /\.(png|jpe?g|webp|gif|avif)(?:[?#]|$)/i.test(doc.fileUrl) ? doc.fileUrl : null;
+  return doc.fileUrl && ((isPortalDocumentUrl(doc.fileUrl) && isPhoto(doc)) || /\.(png|jpe?g|webp|gif|avif)(?:[?#]|$)/i.test(doc.fileUrl)) ? doc.fileUrl : null;
 }
 
 export function ClientActivityFeed({ system }: { system: SolarSystem }) {
