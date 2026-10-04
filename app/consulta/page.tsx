@@ -4,11 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, ExternalLink, LoaderCircle, LogOut, RefreshCw } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { isPortalDocumentUrl } from "@/lib/document-access";
 import { installedPower, mapAdminSystem, type AdminSystem } from "@/lib/admin-system";
 
 type Row = Record<string, string | number | null>;
 const date = (value: unknown) => typeof value === "string" && !Number.isNaN(Date.parse(value)) ? new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(value)) : "Sin registro";
-const safeUrl = (value: unknown) => typeof value === "string" && /^https?:\/\//i.test(value) ? value : undefined;
+const safeUrl = (value: unknown) => isPortalDocumentUrl(value) || (typeof value === "string" && /^https:\/\//i.test(value)) ? value : undefined;
 
 export default function ConsultationPage() {
   const router = useRouter();

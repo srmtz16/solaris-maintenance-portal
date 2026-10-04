@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateClientRequest } from "@/lib/client-request";
 import { sendRequestNotification } from "@/lib/request-notification";
+import { readJsonBody, RequestBodyError } from "@/lib/request-body";
 
 async function getNotificationContext(supabaseUrl: string, supabaseKey: string, publicToken: string) {
   try {
@@ -24,6 +25,9 @@ async function getNotificationContext(supabaseUrl: string, supabaseKey: string, 
 }
 
 export async function POST(request: Request) {
+  if (request.headers.get("origin") !== new URL(request.url).origin) {
+    return NextResponse.json({ error: "Origen no autorizado." }, { status: 403 });
+  }
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseKey) {
@@ -31,10 +35,9 @@ export async function POST(request: Request) {
   }
   let input: unknown;
   try {
-    const raw = await request.text();
-    if (raw.length > 12000) return NextResponse.json({ error: "Solicitud demasiado grande." }, { status: 413 });
-    input = JSON.parse(raw);
-  } catch {
+    input = await readJsonBody(request, 48000);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return NextResponse.json({ error: error.message }, { status: error.status });
     return NextResponse.json({ error: "Solicitud inválida." }, { status: 400 });
   }
   const validation = validateClientRequest(input);
