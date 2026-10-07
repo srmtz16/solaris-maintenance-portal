@@ -1,8 +1,22 @@
 export const DOCUMENT_BUCKET = "system-documents";
+export const ADMIN_DOCUMENT_BUCKET = "admin-documents";
 export const MAX_DOCUMENT_BYTES = 15 * 1024 * 1024;
 
-export const documentTypes = ["Diagrama unifilar", "Reporte", "Fotografías"] as const;
+export const documentTypes = ["Diagrama unifilar", "Reporte", "Fotografías", "Convenio de interconexión", "Contrato de contraprestación", "Acuse de trámite CFE", "Garantía", "Otro documento"] as const;
 export type DocumentType = (typeof documentTypes)[number];
+
+export function isAdministrativeDocument(type: string) {
+  return documentTypes.slice(3).some((category) => category === type);
+}
+
+export function normalizeDocumentSearch(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es-MX").trim();
+}
+
+export function matchesDocumentSearch(query: string, ...fields: (string | null | undefined)[]) {
+  const haystack = normalizeDocumentSearch(fields.filter(Boolean).join(" "));
+  return normalizeDocumentSearch(query).split(/\s+/).every((word) => haystack.includes(word));
+}
 
 const allowedMimeTypes = new Set(["application/pdf", "image/png", "image/jpeg"]);
 
