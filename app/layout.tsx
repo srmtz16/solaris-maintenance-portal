@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SolarisMascot } from "@/components/solaris-mascot/SolarisMascot";
 
 export const metadata: Metadata = {
   title: "SOLARIS | Mantenimiento fotovoltaico",
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es" className="bg-[#F5F7FA]"><body className="bg-[#F5F7FA] font-sans antialiased">{children}</body></html>;
+  return <html lang="es" className="bg-[#F5F7FA]"><body className="bg-[#F5F7FA] font-sans antialiased">{children}<SolarisMascot /></body></html>;
 }
