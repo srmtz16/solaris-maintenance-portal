@@ -1,0 +1,28 @@
+.mascot { position:fixed; z-index:30; right:max(24px,env(safe-area-inset-right)); bottom:max(var(--mascot-bottom,24px),env(safe-area-inset-bottom)); width:120px; pointer-events:none; isolation:isolate; }
+.mascot[data-size="small"] { width:100px; }
+.mascot[data-size="large"] { width:128px; }
+.mascot[data-obscured="true"] { visibility:hidden; }
+.character { display:block; width:100%; padding:0; border:0; border-radius:40%; background:none!important; box-shadow:none!important; cursor:pointer; pointer-events:auto; transition:transform 250ms ease!important; touch-action:manipulation; }
+.character:focus-visible,.pause:focus-visible { outline:2px solid #dca600; outline-offset:4px; }
+.art { display:block; width:100%; height:auto; overflow:visible; filter:drop-shadow(0 3px 3px #06131b20); }
+.float { animation:float 4.3s ease-in-out infinite; }
+.head { transform-origin:90px 106px; animation:look 13s ease-in-out infinite; }
+.blink { transform-box:fill-box; transform-origin:center; animation:blink 13s linear infinite; }
+.gaze { transition:transform 120ms ease-out; }
+.waveArm { transform-origin:119px 120px; }
+.shadow { transform-origin:90px 199px; animation:shadow 4.3s ease-in-out infinite; }
+.pause { position:absolute; top:-2px; right:0; width:28px; height:28px; display:grid; place-items:center; border:1px solid #ced9e2; border-radius:50%; background:#f5f7fa!important; color:#284254; opacity:0; pointer-events:auto; cursor:pointer; }
+.mascot:hover .pause,.mascot:focus-within .pause { opacity:1; }
+.mascot[data-state="greeting"] .waveArm { animation:wave 1.4s ease-in-out both; }
+.mascot[data-state="greeting"] .float { animation:greet 1.4s ease-in-out both; }
+.mascot[data-paused="true"] *,.mascot[data-background="true"] * { animation-play-state:paused!important; }
+@media (hover:hover) { .character:hover { transform:translateY(-2px) scale(1.03); } .character:hover .head { animation-play-state:paused; } }
+@media (max-width:1023px) { .mascot,.mascot[data-size] { width:96px; } }
+@media (max-width:639px) { .mascot,.mascot[data-size] { width:68px; right:max(12px,env(safe-area-inset-right)); bottom:max(var(--mascot-bottom,82px),calc(env(safe-area-inset-bottom) + 12px)); } .pause { width:28px; height:28px; right:-4px; top:-12px; opacity:.8; } }
+@keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-3px); } }
+@keyframes shadow { 0%,100% { transform:scaleX(1); opacity:.12; } 50% { transform:scaleX(.94); opacity:.09; } }
+@keyframes blink { 0%,35%,38%,87%,90%,100% { transform:scaleY(1); } 36.5%,88.5% { transform:scaleY(.12); } }
+@keyframes look { 0%,25%,50%,100% { transform:rotate(0); } 32%,40% { transform:rotate(-2deg); } 75%,83% { transform:rotate(2deg); } }
+@keyframes wave { 0%,100% { transform:rotate(0); } 25%,55%,80% { transform:rotate(-125deg); } 40%,68% { transform:rotate(-105deg); } }
+@keyframes greet { 0%,100% { transform:translateY(0); } 30%,65% { transform:translateY(-4px); } 48% { transform:translateY(-2px); } }
+@media (prefers-reduced-motion:reduce) { .mascot * { animation:none!important; transition:none!important; } .character:hover { transform:none; } .mascot[data-state="greeting"] .waveArm { transform:rotate(-110deg); } .pause { display:none; } }
