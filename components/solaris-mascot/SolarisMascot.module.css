@@ -26,3 +26,18 @@
 @keyframes wave { 0%,100% { transform:rotate(0); } 25%,55%,80% { transform:rotate(-125deg); } 40%,68% { transform:rotate(-105deg); } }
 @keyframes greet { 0%,100% { transform:translateY(0); } 30%,65% { transform:translateY(-4px); } 48% { transform:translateY(-2px); } }
 @media (prefers-reduced-motion:reduce) { .mascot * { animation:none!important; transition:none!important; } .character:hover { transform:none; } .mascot[data-state="greeting"] .waveArm { transform:rotate(-110deg); } .pause { display:none; } }
+.dance { position:absolute; bottom:0; left:0; width:36px; height:36px; display:grid; place-items:center; border:1px solid #e0b633; border-radius:50%; background:#ffda58!important; color:#0b2238; pointer-events:auto; cursor:pointer; box-shadow:0 2px 8px #06131b18; }
+.dance:focus-visible { outline:2px solid #dca600; outline-offset:4px; }
+.dance:hover { background:#ffe68a!important; }
+.dance[aria-pressed="true"] { background:#0b2238!important; color:#ffda58; }
+.leftArm { transform-origin:58px 120px; }
+.mascot[data-state="dancing"] .float { transform-origin:90px 175px; animation:dance .75s ease-in-out infinite; }
+.mascot[data-state="dancing"] .head { animation:danceHead .75s ease-in-out infinite; }
+.mascot[data-state="dancing"] .waveArm { animation:danceRight .75s ease-in-out infinite; }
+.mascot[data-state="dancing"] .leftArm { animation:danceLeft .75s ease-in-out infinite; }
+.mascot[data-state="dancing"] .shadow { animation:shadow .75s ease-in-out infinite; }
+@keyframes dance { 0%,100% { transform:translate(-3px,0) rotate(-6deg); } 25% { transform:translate(0,-7px) rotate(0); } 50% { transform:translate(3px,0) rotate(6deg); } 75% { transform:translate(0,-7px) rotate(0); } }
+@keyframes danceHead { 0%,100% { transform:rotate(7deg); } 50% { transform:rotate(-7deg); } }
+@keyframes danceRight { 0%,100% { transform:rotate(-100deg); } 50% { transform:rotate(-35deg); } }
+@keyframes danceLeft { 0%,100% { transform:rotate(35deg); } 50% { transform:rotate(100deg); } }
+@media (prefers-reduced-motion:reduce) { .mascot[data-state="dancing"] .waveArm { transform:rotate(-85deg); } .mascot[data-state="dancing"] .leftArm { transform:rotate(85deg); } }

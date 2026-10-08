@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Pause, Play } from "lucide-react";
+import { Music2, Pause, Play, Square } from "lucide-react";
 import styles from "./SolarisMascot.module.css";
 
 // Reserved for later phases; only idle and greeting have behavior today.
@@ -20,6 +20,7 @@ export function SolarisMascot({ state = "idle", size = "medium", position = "bot
   const eyes = useRef<SVGGElement>(null);
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [greeting, setGreeting] = useState(false);
+  const [dancing, setDancing] = useState(false);
   const [paused, setPaused] = useState(false);
   const id = useId().replace(/:/g, "");
 
@@ -96,12 +97,23 @@ export function SolarisMascot({ state = "idle", size = "medium", position = "bot
 
   function greet() {
     if (greeting) return;
+    if (timeout.current) clearTimeout(timeout.current);
+    setDancing(false);
+    setPaused(false);
     setGreeting(true);
     timeout.current = setTimeout(() => { setGreeting(false); timeout.current = null; }, 1400);
   }
 
+  function dance() {
+    if (timeout.current) clearTimeout(timeout.current);
+    setGreeting(false);
+    setPaused(false);
+    setDancing(!dancing);
+    timeout.current = dancing ? null : setTimeout(() => { setDancing(false); timeout.current = null; }, 6000);
+  }
+
   if (!enabled) return null;
-  return <div ref={root} className={styles.mascot} data-size={size} data-position={position} data-paused={paused} data-state={greeting || state === "greeting" ? "greeting" : "idle"}>
+  return <div ref={root} className={styles.mascot} data-size={size} data-position={position} data-paused={paused} data-state={dancing ? "dancing" : greeting || state === "greeting" ? "greeting" : "idle"}>
     <button type="button" className={styles.character} onClick={greet} aria-label="Saludar a la mascota SOLARIS">
       <svg viewBox="0 0 180 210" aria-hidden="true" focusable="false" className={styles.art}>
         <defs>
@@ -144,6 +156,7 @@ export function SolarisMascot({ state = "idle", size = "medium", position = "bot
         </g>
       </svg>
     </button>
+    <button type="button" className={styles.dance} onClick={dance} aria-label={dancing ? "Detener baile de SOLARIS" : "Bailar con SOLARIS"} aria-pressed={dancing} title={dancing ? "Detener baile" : "¡Vamos a bailar!"}>{dancing ? <Square size={17} aria-hidden="true"/> : <Music2 size={19} aria-hidden="true"/>}</button>
     <button type="button" className={styles.pause} aria-label={paused ? "Activar animación de la mascota" : "Pausar animación de la mascota"} aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? <Play size={12} aria-hidden="true"/> : <Pause size={12} aria-hidden="true"/>}</button>
   </div>;
 }
