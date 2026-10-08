@@ -15,7 +15,7 @@ export type SolarisMascotProps = {
 
 export function SolarisMascot({ state = "idle", size = "medium", position = "bottom-right" }: SolarisMascotProps) {
   const pathname = usePathname();
-  const enabled = /^\/(s|q)\/[^/]+/.test(pathname) || (pathname.startsWith("/admin") && pathname !== "/admin/login") || pathname === "/consulta";
+  const enabled = (pathname === "/admin" || pathname.startsWith("/admin/")) && pathname !== "/admin/login";
   const root = useRef<HTMLDivElement>(null);
   const eyes = useRef<SVGGElement>(null);
   const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
