@@ -1,0 +1,7 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { PropertyEquipmentSection } from "@/components/property-equipment";
+export function PropertyEquipmentModule({ portalKey, systemCode }: { portalKey: string; systemCode: string }) {
+ return <div className="min-h-dvh bg-[#F5F7FA] text-[#06131B]"><header className="border-b border-white/10 bg-[#06131B] text-white"><div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-5 py-5 md:px-8"><Link href={`/s/${portalKey}`} className="flex items-center gap-3"><Image src="/solaris-brand.webp" alt="SOLARIS" width={40} height={40} className="rounded-xl" /><span><span className="block text-sm font-semibold tracking-[.18em]">SOLARIS</span><span className="block text-xs text-[#FFD966]">Equipos de mi propiedad</span></span></Link><span className="text-xs text-stone-300">Propiedad · {systemCode}</span></div></header><main className="mx-auto max-w-5xl px-5 py-6 md:px-8 md:py-10"><Link href={`/s/${portalKey}`} className="mb-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-stone-600 hover:text-[#06131B]"><ArrowLeft className="size-4" />Volver al Pasaporte Solar</Link><PropertyEquipmentSection portalKey={portalKey} /></main><footer className="mx-auto max-w-5xl px-5 py-8 text-xs leading-5 text-stone-500 md:px-8">SOLARIS · Registro de equipos y servicios de tu propiedad.</footer></div>;
+}
