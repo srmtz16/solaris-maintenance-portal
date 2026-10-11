@@ -22,3 +22,8 @@ export function whatsappUrl(phone: string, topic: ContactTopic = "Orientación",
   }
   return `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(lines.join("\n"))}`;
 }
+
+export function equipmentExpansionUrl(systemCode: string) {
+  const message = `Hola, tengo el Pasaporte Solar ${systemCode}. Quiero conocer los precios y adquirir registros adicionales para mis equipos.`;
+  return `https://wa.me/${SOLARIS_WHATSAPP}?text=${encodeURIComponent(message)}`;
+}
