@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { reportAdmin } from '@/lib/service-report-auth';
 import { readJsonBody } from '@/lib/request-body';
-import { smappeeFileSource, MAX_ENERGY_BYTES } from '@/lib/energy-import';
-import { normalizeEnergy, type EnergyOptions } from '@/lib/energy-metrics';
+import { smappeeFileSource, MAX_ENERGY_BYTES, inspectEnergyTable } from '@/lib/energy-import';
+import { normalizeEnergy } from '@/lib/energy-metrics';
 import { energyReports, energyHeaders } from '@/lib/energy-reports-server';
 export const runtime='nodejs';
 export async function GET(request:Request) {
@@ -23,8 +23,12 @@ export async function POST(request:Request) {
   if(!['inspect','preview','save'].includes(String(body.action))||typeof body.file!=='string'||typeof body.filename!=='string'||typeof body.mime!=='string'||!/^[A-Za-z0-9+/]+={0,2}$/.test(body.file))throw new Error('Selecciona un archivo válido.');
   const bytes=Buffer.from(body.file,'base64');if(bytes.length>MAX_ENERGY_BYTES)throw new Error('Máximo 1.5 MB por archivo.');
   const table=await smappeeFileSource.read(bytes,body.filename,body.mime);
-  if(body.action==='inspect')return NextResponse.json({headers:table.headers,sample:table.rows.slice(0,5),count:table.rows.length,checksum:table.checksum},{headers:energyHeaders});
-  const snapshot=normalizeEnergy(table.rows,body.options as EnergyOptions);
+  const detected=inspectEnergyTable(table);
+  if(body.action==='inspect')return NextResponse.json({start:detected.start,end:detected.end,interval:detected.interval},{headers:energyHeaders});
+  const requested=body.options as Record<string,unknown>|undefined;
+  const start=requested?.start??detected.start,end=requested?.end??detected.end;
+  if(typeof start!=='string'||typeof end!=='string'||start<detected.start||end>detected.end)throw new Error('Elige fechas dentro del periodo que contiene el archivo.');
+  const snapshot=normalizeEnergy(table.rows,{...detected,start,end});
   if(body.action==='preview')return NextResponse.json({snapshot},{headers:energyHeaders});
   if(typeof body.system!=='string'||!/^FV-\d+$/.test(body.system)||typeof body.title!=='string'||!body.title.trim()||body.title.length>160||typeof body.notes!=='string'||body.notes.length>6000)throw new Error('Revisa expediente, título y notas.');
   // Reparse and calculate on every save; never accept a client-provided snapshot.
