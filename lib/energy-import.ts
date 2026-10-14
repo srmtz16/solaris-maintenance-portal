@@ -1,10 +1,40 @@
 import ExcelJS from 'exceljs';
 import { unzipSync } from 'fflate';
 import { createHash } from 'node:crypto';
+import type { EnergyMapping, EnergyOptions } from './energy-metrics';
 
 export const MAX_ENERGY_BYTES = 1_500_000;
 export type EnergyTable = { headers: string[]; rows: unknown[][]; checksum: string; filename: string; mime: string };
 export interface EnergyDataSource { readonly name: string; read(bytes: Uint8Array, filename: string, mime: string): Promise<EnergyTable> }
+
+// Smappee exports carry their units in the headings. Never guess kWh or allow
+// the browser to override source metadata when calculating a report.
+export function inspectEnergyTable(table: EnergyTable): EnergyOptions {
+  const names: Record<keyof EnergyMapping, string> = {timestamp:'Date',consumption:'Consumption',production:'Production',imported:'Import',exported:'Export'};
+  const mapping = {} as EnergyMapping;
+  const units = new Set<string>();
+  for (const field of Object.keys(names) as (keyof EnergyMapping)[]) {
+    const matches = table.headers.map((header,index)=>({header:header.trim(),index})).filter(({header})=>field==='timestamp' ? header==='Date' : new RegExp(`^${names[field]} \\[(Wh|kWh)\\]$`).test(header));
+    if(matches.length!==1) throw new Error('El archivo debe conservar las columnas Date, Consumption, Production, Import y Export de Smappee, con su unidad [Wh] o [kWh].');
+    mapping[field]=matches[0].index;
+    if(field!=='timestamp')units.add(/\[(Wh|kWh)\]$/.exec(matches[0].header)![1]);
+  }
+  if(units.size!==1)throw new Error('Las columnas del archivo deben usar una misma unidad: Wh o kWh.');
+  const stamps=table.rows.map(row=>{
+    const value=row[mapping.timestamp];
+    const match=typeof value==='string'?/^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value.trim()):null;
+    if(!match)throw new Error('El archivo contiene fechas sin reconocer. Prepáralas como AAAA-MM-DD HH:mm:ss antes de importarlo.');
+    const stamp=`${match[1]}T${match[2]}:${match[3]}:${match[4]||'00'}`;
+    const time=Date.parse(stamp+'Z');
+    if(!Number.isFinite(time)||new Date(time).toISOString().slice(0,19)!==stamp)throw new Error('El archivo contiene una fecha inválida. Corrígela antes de importarlo.');
+    return stamp;
+  }).sort();
+  const unique=[...new Set(stamps)];
+  const gaps=unique.slice(1).map((s,i)=>(Date.parse(s+'Z')-Date.parse(unique[i]+'Z'))/60000);
+  const interval=([60,30,15] as const).find(n=>gaps.length>0&&gaps.includes(n)&&gaps.every(g=>g%n===0)&&unique.every(s=>Number(s.slice(14,16))%n===0&&s.slice(17)==='00'));
+  if(!interval)throw new Error('No se reconoce una frecuencia regular de 15, 30 o 60 minutos en el archivo. Revisa sus fechas antes de importarlo.');
+  return {mapping,unit:[...units][0] as 'Wh'|'kWh',timezone:'America/Merida',start:stamps[0].slice(0,10),end:stamps.at(-1)!.slice(0,10),interval};
+}
 
 function csv(text: string): string[][] {
   if (text.includes('\0')) throw new Error('El CSV contiene datos binarios.');
