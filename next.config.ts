@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // PDFKit loads standard font modules dynamically; include them in serverless bundles.
+  outputFileTracingIncludes: {
+    "/api/energy-reports": ["./node_modules/pdfkit/js/standard-fonts/**/*"],
+    "/api/energy-reports/**": ["./node_modules/pdfkit/js/standard-fonts/**/*"],
+  },
   async headers() {
     return [
       { source: "/:path*", headers: [
