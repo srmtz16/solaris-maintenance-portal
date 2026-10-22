@@ -1,3 +1,4 @@
+import { validateReportDetails } from '@/lib/energy-report-design';
 import { NextResponse } from 'next/server';
 import { reportAdmin } from '@/lib/service-report-auth';
 import { readJsonBody } from '@/lib/request-body';
@@ -20,7 +21,7 @@ export async function POST(request:Request) {
    const result=await db.rpc('admin_energy_update',{p_id:body.id,p_revision:body.revision,p_action:body.action,p_notes:body.notes});
    if(result.error)throw new Error(result.error.message);return NextResponse.json({ok:true},{headers:energyHeaders});
   }
-  if(!['inspect','preview','save'].includes(String(body.action))||typeof body.file!=='string'||typeof body.filename!=='string'||typeof body.mime!=='string'||!/^[A-Za-z0-9+/]+={0,2}$/.test(body.file))throw new Error('Selecciona un archivo válido.');
+  if(!['inspect','preview','pdf-preview','save'].includes(String(body.action))||typeof body.file!=='string'||typeof body.filename!=='string'||typeof body.mime!=='string'||!/^[A-Za-z0-9+/]+={0,2}$/.test(body.file))throw new Error('Selecciona un archivo válido.');
   const bytes=Buffer.from(body.file,'base64');if(bytes.length>MAX_ENERGY_BYTES)throw new Error('Máximo 1.5 MB por archivo.');
   const table=await smappeeFileSource.read(bytes,body.filename,body.mime);
   const detected=inspectEnergyTable(table);
@@ -29,10 +30,18 @@ export async function POST(request:Request) {
   const start=requested?.start??detected.start,end=requested?.end??detected.end;
   if(typeof start!=='string'||typeof end!=='string'||start<detected.start||end>detected.end)throw new Error('Elige fechas dentro del periodo que contiene el archivo.');
   const snapshot=normalizeEnergy(table.rows,{...detected,start,end});
+  snapshot.reportDetails=validateReportDetails(body.reportDetails);
   if(body.action==='preview')return NextResponse.json({snapshot},{headers:energyHeaders});
   if(typeof body.system!=='string'||!/^FV-\d+$/.test(body.system)||typeof body.title!=='string'||!body.title.trim()||body.title.length>160||typeof body.notes!=='string'||body.notes.length>6000)throw new Error('Revisa expediente, título y notas.');
+  if(body.action==='pdf-preview') {
+   const [{renderToBuffer},{EnergyReportPdf}]=await Promise.all([import('@react-pdf/renderer'),import('@/components/energy-report-pdf')]);
+   const bytes=await renderToBuffer(EnergyReportPdf({report:{id:'preview',folio:'VISTA PREVIA',system_code:body.system,status:'draft',title:body.title,notes:body.notes,revision:1,snapshot,created_at:new Date().toISOString(),published_at:null}}));
+   return new Response(new Uint8Array(bytes),{headers:{...energyHeaders,'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="SOLARIS-informe-previa.pdf"'}});
+  }
   // Reparse and calculate on every save; never accept a client-provided snapshot.
   const result=await db.rpc('admin_energy_draft',{p_system_code:body.system,p_filename:table.filename,p_mime:table.mime,p_raw:body.file,p_checksum:table.checksum,p_title:body.title.trim(),p_notes:body.notes,p_snapshot:snapshot});
   if(result.error)throw new Error(result.error.message);return NextResponse.json({id:result.data},{headers:energyHeaders});
  } catch(error){return NextResponse.json({error:error instanceof Error?error.message:'No se pudo procesar el archivo.'},{status:400,headers:energyHeaders});}
 }
+
+

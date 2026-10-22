@@ -1,3 +1,4 @@
+import type { EnergyReportDetails } from './energy-report-design';
 export const ENERGY_VERSION = 1;
 export const ENERGY_FIELDS = ['timestamp', 'consumption', 'production', 'imported', 'exported'] as const;
 export type EnergyField = typeof ENERGY_FIELDS[number];
@@ -12,7 +13,7 @@ export type EnergyQuality = {
   missingIntervals: string[]; unusableIntervals: number; firstMeasured: string | null; lastMeasured: string | null;
   observedSpacings: {minutes: number; count: number}[]; maxBalanceResidual: number; signedBalanceResidual: number;
 };
-export type EnergySnapshot = { version: number; options: EnergyOptions; rows: EnergyRow[]; daily: EnergyDay[]; errors: string[]; warnings: string[]; quality?: EnergyQuality; totals: { consumption: number; production: number; imported: number; exported: number; selfConsumption: number; netImported: number; equivalentCoverage: number | null; directSelfSufficiency: number | null; directSolarUtilization?: number | null }; };
+export type EnergySnapshot = { reportDetails?: EnergyReportDetails; version: number; options: EnergyOptions; rows: EnergyRow[]; daily: EnergyDay[]; errors: string[]; warnings: string[]; quality?: EnergyQuality; totals: { consumption: number; production: number; imported: number; exported: number; selfConsumption: number; netImported: number; equivalentCoverage: number | null; directSelfSufficiency: number | null; directSolarUtilization?: number | null }; };
 export type EnergyReport = { id: string; folio: string; system_code: string; status: 'draft' | 'published'; title: string; notes: string; revision: number; snapshot: EnergySnapshot; created_at: string; published_at: string | null };
 export const energyNumber = (value: number | null, decimals = 2) => value === null ? 'No disponible' : value.toLocaleString('es-MX', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 export function energyIndicators(s: EnergySnapshot) {
@@ -36,7 +37,7 @@ export function suggestEnergyConclusions(s: EnergySnapshot): string {
 }
 // Explicit projection: administrative diagnostics and source rows never belong to the client response.
 export function clientEnergySnapshot(s: EnergySnapshot): EnergySnapshot {
-  return {version:s.version,options:s.options,rows:[],daily:s.daily,totals:s.totals,errors:[],warnings:[]};
+  return {reportDetails:s.reportDetails,version:s.version,options:s.options,rows:[],daily:s.daily,totals:s.totals,errors:[],warnings:[]};
 }
 const dayPattern = /^\d{4}-\d{2}-\d{2}$/;
 function validDay(value: string) { return dayPattern.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value; }
@@ -96,3 +97,4 @@ export function normalizeEnergy(raw: unknown[][], options: EnergyOptions): Energ
   warnings.push('Solo se suman registros únicos y válidos. Sin interpolación ni sustitución por ceros. Los originales se conservan sin modificaciones.','Balance por intervalo: generación + importación − consumo − exportación. Tolerancia: 0.001 kWh (1 Wh) por redondeo. Los registros fuera de tolerancia se excluyen.','Energía solar utilizada = suma de máx(0, generación − exportación) por intervalo. El límite en cero solo corrige diferencias de redondeo aceptadas; requiere ausencia de flujos de batería sin medir.','Los indicadores derivados son cálculos sobre mediciones, no mediciones adicionales ni evaluaciones de eficiencia técnica.');
   return {version:ENERGY_VERSION,options,rows,daily,errors,warnings,quality,totals:{consumption,production,imported,exported,selfConsumption,netImported:imported-exported,equivalentCoverage:consumption?production/consumption*100:null,directSelfSufficiency:consumption?selfConsumption/consumption*100:null,directSolarUtilization:production?selfConsumption/production*100:null}};
 }
+
