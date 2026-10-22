@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validateReportDetails,reportPerformance} from '../lib/energy-report-design.ts';
+import {clientEnergySnapshot} from '../lib/energy-metrics.ts';
+const s={options:{interval:60},daily:[{count:24},{count:24}],totals:{production:40},reportDetails:{expectedDaily:25,reference:'Validada'},rows:[],errors:[],warnings:[]};
+test('reference remains separate from actual production',()=>{const p=reportPerformance(s);assert.equal(p.expected,50);assert.equal(p.compliance,80);assert.equal(p.difference,-10);assert.equal(s.totals.production,40)});
+test('partial periods never get a performance percentage',()=>{const p=reportPerformance({...s,daily:[{count:23}]});assert.equal(p.compliance,null);assert.equal(p.difference,null)});
+test('missing reference never defaults to sample numbers',()=>assert.equal(reportPerformance({...s,reportDetails:undefined}).expected,null));
+test('requires an explicit source and positive finite reference',()=>{for(const n of [-1,0,NaN,Infinity,'25'])assert.throws(()=>validateReportDetails({expectedDaily:n,reference:'Fuente'}));assert.throws(()=>validateReportDetails({expectedDaily:25}));assert.equal(validateReportDetails({expectedDaily:25,reference:'Fuente'}).expectedDaily,25)});
+test('client projection keeps report details but removes raw measurements',()=>{const p=clientEnergySnapshot({...s,rows:[{private:true}]});assert.equal(p.reportDetails.reference,'Validada');assert.deepEqual(p.rows,[])});
