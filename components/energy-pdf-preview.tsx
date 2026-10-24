@@ -52,11 +52,12 @@ export function EnergyPdfPreview({blob,url,filename}:{blob?:Blob;url?:string;fil
  },[document,page]);
  const control='min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm disabled:opacity-40';
  return <section aria-label="Vista previa del PDF final" className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-  <header className="flex flex-wrap items-center justify-between gap-3 bg-white p-4"><div><h3 className="font-semibold">Vista previa del reporte final</h3><p className="mt-1 text-sm text-slate-500">Revisa las páginas. Descargarás este mismo documento.</p></div>{download&&<a className="inline-flex min-h-11 items-center rounded-xl bg-[#06131B] px-5 py-3 text-sm font-semibold text-white" href={download} download={filename}>Descargar PDF</a>}</header>
+  <header className="flex flex-wrap items-center justify-between gap-3 bg-white p-4"><div><h3 className="font-semibold">Vista previa del reporte final</h3><p className="mt-1 text-sm text-slate-500">Revisa las páginas. Descargarás este mismo documento.</p></div>{download&&<a style={{color:"#fff"}} className="inline-flex min-h-11 items-center rounded-xl bg-[#06131B] px-5 py-3 text-sm font-semibold text-white" href={download} download={filename}>Descargar PDF</a>}</header>
   {document&&<div className="flex flex-wrap items-center justify-center gap-2 border-y border-slate-200 p-3" aria-label="Controles del PDF"><button type="button" className={control} disabled={page===1||rendering} onClick={()=>setPage(page-1)}>Anterior</button><span aria-live="polite" className="px-2 text-sm">Página {page} de {document.numPages}</span><button type="button" className={control} disabled={page===document.numPages||rendering} onClick={()=>setPage(page+1)}>Siguiente</button><label className="ml-2 text-sm">Zoom <select aria-label="Zoom del PDF" className={control} value={zoom} onChange={e=>setZoom(Number(e.target.value))}><option value={100}>Ajustar</option><option value={125}>125%</option><option value={150}>150%</option><option value={200}>200%</option></select></label></div>}
   {error&&<p role="alert" className="p-5 text-sm text-red-700">{error}</p>}
   {!document&&!error&&<p role="status" className="p-8 text-center text-sm">Abriendo páginas del PDF…</p>}
   {document&&<div style={{overflow:'auto',maxHeight:'80vh'}} className="p-2 sm:p-5" aria-busy={rendering}>{rendering&&<p role="status" className="pb-2 text-center text-sm">Preparando página…</p>}<div style={{width:`${zoom}%`,margin:'0 auto'}}><canvas ref={canvas} role="img" aria-label={`Página ${page} del reporte final. El PDF descargable contiene el texto completo.`} style={{display:'block',width:'100%',height:'auto',background:'white',boxShadow:'0 2px 10px #0002'}}/></div></div>}
  </section>;
 }
+
 
