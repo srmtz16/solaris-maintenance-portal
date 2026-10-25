@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {formattedRuns,formattedChunks} from '../lib/energy-formatting.ts';
+import {reportPerformance,validateReportDetails} from '../lib/energy-report-design.ts';
+import {inspectEnergyTable} from '../lib/energy-import.ts';import {normalizeEnergy} from '../lib/energy-metrics.ts';
+test('formatting supports bold, italic, combined and literal HTML safely',()=>{const r=formattedRuns('**Solar** *energía* ***ambos*** <script>');assert.deepEqual(r.filter(x=>x.bold||x.italic),[{text:'Solar',bold:true,italic:false},{text:'energía',bold:false,italic:true},{text:'ambos',bold:true,italic:true}]);assert.equal(r.at(-1).text,' <script>');});
+test('continuation preserves marked spans',()=>{const s='Una frase. **'+ 'texto '.repeat(100)+'** final';const chunks=formattedChunks(s,100);assert.equal(chunks.join(''),s);assert.ok(chunks.some(x=>x.includes('**texto ')));});
+for(const n of [1,2,3,4,5,16])test(`file determines ${n} monitoring days`,()=>{const rows=[];for(let d=1;d<=n;d++)for(let h=0;h<24;h++)rows.push([`2026-10-${String(d).padStart(2,'0')} ${String(h).padStart(2,'0')}:00:00`,100,80,40,20]);const table={headers:['Date','Consumption [Wh]','Production [Wh]','Import [Wh]','Export [Wh]'],rows};const s=normalizeEnergy(rows,inspectEnergyTable(table));assert.equal(reportPerformance(s).days,n);assert.equal(s.daily.length,n);assert.equal(s.options.end,`2026-10-${String(n).padStart(2,'0')}`);});
+test('source and interpretation are optional and validated',()=>{assert.equal(validateReportDetails({}).measurementSource,'');assert.equal(validateReportDetails({interpretation:'**Revisada**'}).interpretation,'**Revisada**');assert.throws(()=>validateReportDetails({interpretation:'x'.repeat(601)}));});
