@@ -5,6 +5,7 @@ export type EnergyReportDetails = {
   client: string; technician: string; location: string; systemType: string;
   modules: string; equipment: string; capacity: string;
   expectedDaily: number | null; reference: string;
+  measurementSource?: string; interpretation?: string;
 };
 export function validateReportDetails(raw: unknown): EnergyReportDetails | undefined {
   if (raw == null) return undefined;
@@ -19,7 +20,7 @@ export function validateReportDetails(raw: unknown): EnergyReportDetails | undef
   if (expectedDaily !== null && (typeof expectedDaily !== 'number' || !Number.isFinite(expectedDaily) || expectedDaily <= 0 || expectedDaily > 1e9)) throw new Error('La referencia diaria debe ser un número positivo en kWh.');
   const reference = text('reference', 300);
   if (expectedDaily !== null && !reference) throw new Error('Documenta el origen de la generación esperada.');
-  return {client:text('client'),technician:text('technician'),location:text('location'),systemType:text('systemType'),modules:text('modules',30),equipment:text('equipment'),capacity:text('capacity',40),expectedDaily,reference};
+  return {client:text('client'),technician:text('technician'),location:text('location'),systemType:text('systemType'),modules:text('modules',30),equipment:text('equipment'),capacity:text('capacity',40),expectedDaily,reference,measurementSource:text('measurementSource',120),interpretation:text('interpretation',600)};
 }
 export function reportPerformance(s: EnergySnapshot) {
   const days = s.daily.length;

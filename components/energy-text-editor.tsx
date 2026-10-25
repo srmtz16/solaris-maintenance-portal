@@ -1,0 +1,9 @@
+'use client';
+import {useRef} from 'react';
+import {formattedRuns} from '@/lib/energy-formatting';
+export function FormattedText({value}:{value:string}){return <>{formattedRuns(value).map((r,i)=><span key={i} style={{fontWeight:r.bold?700:undefined,fontStyle:r.italic?'italic':undefined}}>{r.text}</span>)}</>}
+export function EnergyTextEditor({label,value,onChange,maxLength=6000}:{label:string;value:string;onChange:(value:string)=>void;maxLength?:number}){
+ const ref=useRef<HTMLTextAreaElement>(null);
+ function format(mark:string){const el=ref.current;if(!el)return;const a=el.selectionStart,b=el.selectionEnd;const selection=value.slice(a,b)||'texto';const next=value.slice(0,a)+mark+selection+mark+value.slice(b);if(next.length>maxLength)return;onChange(next);requestAnimationFrame(()=>{el.focus();el.setSelectionRange(a+mark.length,a+mark.length+selection.length);});}
+ return <div className="space-y-2"><label className="block text-sm">{label}<textarea ref={ref} rows={5} maxLength={maxLength} className="mt-1 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" value={value} onChange={e=>onChange(e.target.value)}/></label><div role="group" aria-label={`Formato de ${label}`} className="flex flex-wrap gap-2"><button type="button" className="min-h-11 rounded-lg border border-slate-300 px-4 text-sm font-bold" onClick={()=>format('**')}>Negrita</button><button type="button" className="min-h-11 rounded-lg border border-slate-300 px-4 text-sm italic" onClick={()=>format('*')}>Cursiva</button></div><p className="text-xs text-slate-500">Selecciona el texto y elige un formato.</p>{value&&<div className="rounded-xl bg-slate-50 p-3 text-sm leading-6"><p className="mb-2 text-xs text-slate-500">Vista del texto</p><div className="whitespace-pre-wrap"><FormattedText value={value}/></div></div>}</div>;
+}
