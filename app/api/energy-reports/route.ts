@@ -1,4 +1,4 @@
-import { validateReportDetails } from '@/lib/energy-report-design';
+import { validateReportDetails, economicProjection } from '@/lib/energy-report-design';
 import { NextResponse } from 'next/server';
 import { reportAdmin } from '@/lib/service-report-auth';
 import { readJsonBody } from '@/lib/request-body';
@@ -31,6 +31,7 @@ export async function POST(request:Request) {
   if(typeof start!=='string'||typeof end!=='string'||start<detected.start||end>detected.end)throw new Error('Elige fechas dentro del periodo que contiene el archivo.');
   const snapshot=normalizeEnergy(table.rows,{...detected,start,end});
   snapshot.reportDetails=validateReportDetails(body.reportDetails);
+  if(snapshot.reportDetails?.economics&&!economicProjection(snapshot))throw new Error("La proyección requiere al menos un día completo con mediciones válidas. Desactívala o importa otro periodo.");
   if(body.action==='preview')return NextResponse.json({snapshot},{headers:energyHeaders});
   if(typeof body.system!=='string'||!/^FV-\d+$/.test(body.system)||typeof body.title!=='string'||!body.title.trim()||body.title.length>160||typeof body.notes!=='string'||body.notes.length>6000)throw new Error('Revisa expediente, título y notas.');
   if(body.action==='pdf-preview') {
