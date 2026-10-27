@@ -1,7 +1,7 @@
 import {Document,Page,Text,View,StyleSheet,Svg,Path,Line,Rect,Circle,G} from '@react-pdf/renderer';
 import {energyNumber,type EnergyReport,type EnergyDay} from '@/lib/energy-metrics';
 import {formattedRuns,formattedChunks} from '@/lib/energy-formatting';
-import {reportPerformance} from '@/lib/energy-report-design';
+import {reportPerformance,economicProjection} from '@/lib/energy-report-design';
 
 function Rich({value}:{value:string}){return <>{formattedRuns(value).map((r,i)=><Text key={i} style={{fontFamily:r.bold?(r.italic?'Helvetica-BoldOblique':'Helvetica-Bold'):(r.italic?'Helvetica-Oblique':'Helvetica')}}>{r.text}</Text>)}</>}
 const navy='#102D45', yellow='#F4B400', muted='#405875', pale='#F3F5F7';
@@ -16,19 +16,20 @@ const st=StyleSheet.create({
 });
 const kwh=(n:number|null)=>n===null?'No disponible':`${energyNumber(n)} kWh`;
 const date=(s:string)=>/^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(0,10).split('-').reverse().join('/'):'Sin registro';
-function Icon({kind,color=yellow,size=34}:{kind:'sun'|'house'|'grid'|'bars'|'info';color?:string;size?:number}){
+function Icon({kind,color=yellow,size=34}:{kind:'sun'|'house'|'grid'|'bars'|'info'|'coins';color?:string;size?:number}){
  return <Svg width={size} height={size} viewBox="0 0 48 48">
  {kind==='sun'?<><Circle cx="24" cy="24" r="10" fill={color}/>{[[24,2,24,9],[24,39,24,46],[2,24,9,24],[39,24,46,24],[8,8,13,13],[35,35,40,40],[8,40,13,35],[35,13,40,8]].map((a,i)=><Line key={i} x1={a[0]} y1={a[1]} x2={a[2]} y2={a[3]} stroke={color} strokeWidth="2.5"/>)}</>:null}
  {kind==='house'?<Path d="M3 23 L24 4 L45 23 L39 23 L39 44 L28 44 L28 31 L20 31 L20 44 L9 44 L9 23 Z" fill={color}/>:null}
  {kind==='bars'?<><Rect x="4" y="29" width="9" height="16" rx="2" fill={color}/><Rect x="19" y="17" width="9" height="28" rx="2" fill={color}/><Rect x="34" y="4" width="9" height="41" rx="2" fill={color}/></>:null}
  {kind==='grid'?<Path d="M24 2 L9 46 M24 2 L39 46 M14 15 L34 15 L39 22 L9 22 Z M12 29 L36 29 M17 11 L31 38 L12 29 L34 15 M31 11 L17 38 L36 29 L14 15 M18 9 L30 9" stroke={color} strokeWidth="2.3" fill="none"/>:null}
+ {kind==='coins'?<><Path d="M4 12 C4 4 32 4 32 12 L32 31 C32 39 4 39 4 31 Z" fill="#087EF0"/><Path d="M4 12 C4 20 32 20 32 12 M4 21 C4 29 32 29 32 21" fill="none" stroke="white" strokeWidth="2"/><Path d="M21 29 C21 22 46 22 46 29 L46 41 C46 48 21 48 21 41 Z" fill="#087EF0" stroke="white" strokeWidth="1.5"/><Path d="M21 29 C21 36 46 36 46 29 M21 35 C21 42 46 42 46 35" fill="none" stroke="white" strokeWidth="1.5"/></>:null}
  {kind==='info'?<><Circle cx="24" cy="24" r="21" fill={color}/><Circle cx="24" cy="13" r="2" fill="white"/><Rect x="22" y="20" width="4" height="17" fill="white"/></>:null}
  </Svg>;
 }
 function Header({report}:{report:EnergyReport}){return <View fixed style={st.header}><View><Text style={st.brand}>SOLARIS</Text><Text style={st.tag}>ENERGY SOLUTIONS</Text><Text style={st.slogan}>Iluminando el mañana</Text></View><View style={st.meta}><Text style={st.bold}>{report.system_code}</Text><Text style={{marginTop:4}}>{date(report.published_at||report.created_at||'')}</Text><Text style={{marginTop:4}}>Reporte de monitoreo</Text>{report.status==='draft'&&<Text style={{color:'#A66B00',marginTop:4}}>BORRADOR · NO PUBLICADO</Text>}</View></View>}
 function Footer({report,page,total}:{report:EnergyReport;page:number;total:number}){return <View fixed style={{position:'absolute',top:805,left:35,right:35,height:18,flexDirection:'row',fontSize:8,color:muted}}><Text style={{width:'34%'}}>{report.system_code} · {date(report.published_at||report.created_at||'')}</Text><Text style={{width:'52%',textAlign:'center'}}>SOLARIS Energy Solutions · {report.system_code}</Text><Text style={{width:'14%',textAlign:'right'}}>{page} / {total}</Text></View>;}
 function Rows({rows,bold=false}:{rows:[string,string][];bold?:boolean}){return <View>{rows.map(([a,b])=><View wrap={false} key={a} style={st.row}><Text style={st.label}>{a}</Text><Text style={[st.cell,bold?st.bold:{}]}>{b||'Sin registro'}</Text></View>)}</View>}
-function Metric({kind,label,value,sub}:{kind:'sun'|'house'|'grid'|'bars';label:string;value:string;sub:string}){return <View style={st.card}><Icon kind={kind}/><View style={{flex:1}}><Text style={{fontSize:8.5}}>{label}</Text><Text style={{fontSize:17,fontFamily:'Helvetica-Bold',lineHeight:1.3,marginVertical:3}}>{value}</Text><Text style={{fontSize:8,color:muted}}>{sub}</Text></View></View>}
+function Metric({kind,label,value,sub}:{kind:'sun'|'house'|'grid'|'bars'|'coins';label:string;value:string;sub:string}){return <View style={st.card}><Icon kind={kind}/><View style={{flex:1}}><Text style={{fontSize:8.5}}>{label}</Text><Text style={{fontSize:17,fontFamily:'Helvetica-Bold',lineHeight:1.3,marginVertical:3}}>{value}</Text><Text style={{fontSize:8,color:muted}}>{sub}</Text></View></View>}
 function DailyChart({days,expected}:{days:EnergyDay[];expected:number|null}){
  const max=Math.max(1,...days.map(d=>d.production),expected||0)*1.15;
  const left=40,top=18,width=460,height=220,step=width/Math.max(days.length,1);
@@ -48,6 +49,7 @@ export function EnergyReportPdf({report}:{report:EnergyReport}) {
  const percent=(v:number|null)=>v===null?'No disponible':`${energyNumber(v,1)} %`;
  const chunks:EnergyDay[][]=[];for(let i=0;i<s.daily.length;i+=31)chunks.push(s.daily.slice(i,i+31));if(!chunks.length)chunks.push([]);
  const noteChunks=formattedChunks(report.notes||'Pendientes de revisión y aprobación por SOLARIS.');
+ const economy=economicProjection(s);
  const totalPages=1+chunks.length+noteChunks.length;
  return <Document title="Monitoreo y desempeño energético" author="SOLARIS ENERGY SOLUTIONS">
  <Page size="A4" style={st.page}><Header report={report}/><Text style={st.title}>Monitoreo y desempeño energético</Text>
@@ -56,7 +58,7 @@ export function EnergyReportPdf({report}:{report:EnergyReport}) {
  <Text style={st.heading}>Resumen del periodo evaluado</Text><Rows bold rows={[["Periodo de monitoreo",period],["Días evaluados",String(p.days)],["Generación fotovoltaica",kwh(t.production)],["Consumo total registrado",kwh(t.consumption)],["Autoconsumo solar",kwh(t.selfConsumption)],["Importación desde la red",kwh(t.imported)],["Exportación hacia la red",kwh(t.exported)],["Eficiencia del sistema",percent(p.compliance)]]}/>
  <View style={[st.panel,{marginTop:20}]}><Text style={[st.heading,{marginTop:0}]}>Indicadores principales</Text><View style={st.cards}>
  <Metric kind="sun" label="Generación fotovoltaica" value={kwh(t.production)} sub={`en ${p.days} ${p.days===1?'día':'días'}`}/><Metric kind="bars" label="Eficiencia del sistema" value={percent(p.compliance)} sub={p.expected!==null?`${energyNumber(t.production)} / ${energyNumber(p.expected)} kWh`:'Sin referencia validada'}/>
- <Metric kind="house" label="Autoconsumo solar" value={kwh(t.selfConsumption)} sub={`${percent(share)} de la generación`}/><Metric kind="grid" label="Importación de la red" value={kwh(t.imported)} sub={`en ${p.days} ${p.days===1?'día':'días'}`}/></View></View><Footer report={report} page={1} total={totalPages}/></Page>
+ <Metric kind="coins" label="Pago estimado sin paneles" value={economy?'$'+energyNumber(economy.withoutPanels)+' MXN':'Por configurar'} sub={economy?'Proyección bimestral ('+economy.config.days+' días)':'Tarifa pendiente de confirmar'}/><Metric kind="house" label="Pago estimado con paneles" value={economy?(economy.withPanels===null?'Configurar contrato':'$'+energyNumber(economy.withPanels)+' MXN'):'Por configurar'} sub={economy?'Proyección bimestral ('+economy.config.days+' días)':'Tarifa pendiente de confirmar'}/></View><Text style={{fontSize:7,color:muted,marginTop:7,lineHeight:1.4}}>{economy?'Incluye IVA del '+energyNumber(economy.config.vatPercent??0,0)+'% sobre energía y $'+energyNumber(economy.config.lightingCharge??0)+' de alumbrado público. No incluye otros cargos. Base: '+economy.measuredDays+' días completos.':'Configura tarifa, vigencia y contrato para generar la estimación.'}</Text></View><Footer report={report} page={1} total={totalPages}/></Page>
  {chunks.map((days,index)=><Page key={index} size="A4" style={st.page}><Header report={report}/><Text style={st.title}>Generación fotovoltaica ({p.days} {p.days===1?'día':'días'})</Text>
  <View style={{marginLeft:40,marginBottom:10}}><Text style={{color:'#A87500',marginBottom:4}}>---  {dailyReference!==null?`Referencia: ${energyNumber(dailyReference)} kWh/día`:'Referencia: no configurada'}</Text><View style={{flexDirection:'row',alignItems:'center',gap:6}}><View style={{width:14,height:7,backgroundColor:navy,borderRadius:2}}/><Text>Generación registrada</Text></View></View>
  <DailyChart days={days} expected={dailyReference}/><Text style={st.heading}>Resultados de desempeño</Text><View style={st.panel}><Rows bold rows={[["Referencia diaria",dailyReference!==null?`${energyNumber(dailyReference)} kWh/día`:'No disponible'],["Referencia del periodo",kwh(p.expected)],["Generación registrada",kwh(t.production)],["Diferencia respecto a la referencia",kwh(p.difference)],["Eficiencia del sistema",percent(p.compliance)]]}/></View>
@@ -71,6 +73,7 @@ export function EnergyReportPdf({report}:{report:EnergyReport}) {
  {noteChunks.slice(1).map((note,i)=><Page key={i} size="A4" style={st.page}><Header report={report}/><Text style={st.title}>Conclusiones · continuación</Text><Text style={st.body}><Rich value={note}/></Text><Footer report={report} page={chunks.length+3+i} total={totalPages}/></Page>)}
  </Document>;
 }
+
 
 
 
