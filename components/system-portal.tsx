@@ -22,7 +22,6 @@ const navItems = [
   { label: "Historial", icon: History, section: "historial" },
   { label: "Documentos", icon: FolderOpen, section: "documentos" },
   { label: "Soporte", icon: Headphones, section: "soporte" },
-  { label: "Reportes", icon: FileText, section: "reportes" },
 ] as const;
 
 const portalHref = (id: string, section: string) => `/s/${id}${section ? `/${section}` : ""}`;
@@ -141,7 +140,7 @@ function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) 
 
 function EmptyState({ icon: Icon, title, description }: { icon: typeof Inbox; title: string; description: string }) { return <div className="grid min-h-64 place-items-center rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-12 text-center"><div><span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#FFF6D9] text-[#8A6200]"><Icon className="size-5" /></span><h3 className="mt-5 font-semibold text-stone-900">{title}</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-500">{description}</p></div></div>; }
 
-function MobileNavigation({ id }: { id: string }) { const pathname = usePathname(); return <nav className="solaris-mobile-nav fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-white/10 bg-[#06131B]/95 p-1.5 shadow-[0_12px_40px_rgba(20,20,15,.16)] backdrop-blur-xl md:hidden" aria-label="Secciones del portal"><div className="grid grid-cols-6">{navItems.map(({ label, icon: Icon, section }) => { const href = portalHref(id, section); const active = pathname === href; return <Link key={label} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-medium transition-colors ${active ? "bg-[#F4B400] text-[#06131B]" : "text-stone-200 active:bg-white/10"}`}><Icon className="size-4 shrink-0" /><span className="max-w-full truncate">{label}</span></Link>; })}</div></nav>; }
+function MobileNavigation({ id }: { id: string }) { const pathname = usePathname(); return <nav className="solaris-mobile-nav fixed inset-x-3 bottom-3 z-40 rounded-2xl border border-white/10 bg-[#06131B]/95 p-1.5 shadow-[0_12px_40px_rgba(20,20,15,.16)] backdrop-blur-xl md:hidden" aria-label="Secciones del portal"><div className="grid grid-cols-5">{navItems.map(({ label, icon: Icon, section }) => { const href = portalHref(id, section); const active = pathname === href; return <Link key={label} href={href} aria-current={active ? "page" : undefined} className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-medium transition-colors ${active ? "bg-[#F4B400] text-[#06131B]" : "text-stone-200 active:bg-white/10"}`}><Icon className="size-4 shrink-0" /><span className="max-w-full truncate">{label}</span></Link>; })}</div></nav>; }
 
 export function SystemPortal({ system, portalKey, view = "inicio" }: { system: SolarSystem; portalKey: string; view?: SystemPortalView }) {
   const router = useRouter();
